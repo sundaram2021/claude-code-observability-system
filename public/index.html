@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Observability Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>
+      <h1>Agentic Observability</h1>
+    </div>
+    <button id="refresh-btn">Refresh Data</button>
+  </header>
+
+  <main>
+    <section class="metrics-container" id="metrics-view">
+      <div class="metric-card">
+        <h3>Total Traces</h3>
+        <p id="metric-traces">0</p>
+      </div>
+      <div class="metric-card">
+        <h3>Avg Latency</h3>
+        <p id="metric-latency">0ms</p>
+      </div>
+      <div class="metric-card">
+        <h3>Input Tokens</h3>
+        <p id="metric-input-tokens">0</p>
+      </div>
+      <div class="metric-card">
+        <h3>Output Tokens</h3>
+        <p id="metric-output-tokens">0</p>
+      </div>
+      <div class="metric-card">
+        <h3>Total Cost</h3>
+        <p id="metric-cost" class="cost-text">$0.00</p>
+      </div>
+      <div class="metric-card">
+        <h3>Errors</h3>
+        <p id="metric-errors" class="error-text">0</p>
+      </div>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="panel traces-panel">
+        <div class="panel-header">
+          <h2>Recent Traces (Waterfall)</h2>
+        </div>
+        <div id="traces-list" class="traces-list">
+          <p class="placeholder">Loading traces...</p>
+        </div>
+      </section>
+
+      <section class="panel logs-panel">
+        <div class="panel-header">
+          <h2>System Logs</h2>
+        </div>
+        <div class="terminal" id="logs-list">
+          <p class="placeholder">Loading logs...</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
