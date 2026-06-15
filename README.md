@@ -2,6 +2,10 @@
 
 A self-hosted observability platform for LLM-powered agents. It traces every Anthropic API call and tool execution using OpenTelemetry, stores everything in memory, and renders a live dashboard in the browser — no external services needed.
 
+## Demo
+<img width="1918" height="906" alt="image" src="https://github.com/user-attachments/assets/58110b3b-2b95-445e-96dc-92b63c922b0d" />
+<img width="1901" height="870" alt="image" src="https://github.com/user-attachments/assets/37d08355-b5d0-43c4-8761-210b3b605bd7" />
+
 ## Architecture
 
 ```mermaid
@@ -88,3 +92,6 @@ curl -X POST http://localhost:3000/api/chat \
 
 # 6. Watch the dashboard update with traces and spans
 ```
+
+## Concepts
+<img width="1577" height="806" alt="image" src="https://github.com/user-attachments/assets/433293a1-7808-42e0-9499-433229211c3b" />
