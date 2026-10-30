@@ -57,3 +57,4 @@ func TestFilter_TagsAndUser(t *testing.T) {
 		t.Errorf("expected mismatch on tag")
 	}
 }
+

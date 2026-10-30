@@ -70,3 +70,4 @@ func (h *ScoreHandler) GetTraceScores(w http.ResponseWriter, r *http.Request) {
 
 	WriteSuccess(w, http.StatusOK, scores, len(scores))
 }
+

@@ -34,3 +34,4 @@ The user ran `/observe` (with optional arguments: `$ARGUMENTS`).
 4. **If argument is "export"**:
    - Fetch `http://localhost:3000/api/v1/traces/export` and save to `claude-traces-export.json`.
    - Confirm export path to the user.
+

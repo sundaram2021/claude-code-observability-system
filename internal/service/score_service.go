@@ -53,3 +53,4 @@ func (s *ScoreService) GetTraceScores(traceID string) ([]*domain.Score, error) {
 func (s *ScoreService) ListScores() ([]*domain.Score, error) {
 	return s.scoreRepo.ListAllScores()
 }
+

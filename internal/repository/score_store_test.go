@@ -46,3 +46,4 @@ func TestScoreStore_SaveAndRetrieve(t *testing.T) {
 		t.Errorf("expected 2 active scores, got %d", len(all))
 	}
 }
+

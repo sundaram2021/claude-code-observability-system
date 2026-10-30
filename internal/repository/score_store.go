@@ -84,3 +84,4 @@ func (s *ScoreStore) ListAllScores() ([]*domain.Score, error) {
 	}
 	return result, nil
 }
+

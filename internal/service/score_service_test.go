@@ -59,3 +59,4 @@ func TestScoreService_RecordAndLinkToTrace(t *testing.T) {
 		t.Errorf("expected ErrInvalidScore for empty traceId")
 	}
 }
+

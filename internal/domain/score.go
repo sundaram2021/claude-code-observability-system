@@ -30,3 +30,4 @@ func NewScore(id, traceID, spanID, name string, value float64, comment, source s
 		CreatedAt: time.Now(),
 	}
 }
+

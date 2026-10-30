@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/claude-code/observability/internal/domain"
@@ -37,6 +38,16 @@ func StartBackground(port int) error {
 
 	cmd := exec.Command(exe)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PORT=%d", port))
+	cmd.Stdin = nil
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			CreationFlags: 0x08000000 | 0x00000200, // CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
+		}
+	}
+
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start background daemon: %w", err)
 	}
