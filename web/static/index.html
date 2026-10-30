@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code Observability | Langfuse for Claude</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/waterfall.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>
+        </svg>
+        <span class="logo-title">Claude Code</span>
+        <span class="logo-badge">Observability</span>
+      </div>
+      <div class="live-pill" id="live-indicator"><span class="live-dot"></span><span id="live-status">Connecting</span></div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="tab-traces">Traces & Spans</button>
+      <button class="nav-tab" data-tab="tab-sessions">Sessions</button>
+      <button class="nav-tab" data-tab="tab-analytics">Tool Analytics</button>
+      <button class="nav-tab" data-tab="tab-guide">Integration Guide</button>
+    </nav>
+    <div class="header-actions">
+      <button id="btn-simulate" class="btn btn-primary">+ Simulate Task</button>
+      <button id="btn-refresh" class="btn btn-secondary" title="Refresh data">Refresh</button>
+      <button id="btn-clear" class="btn btn-danger" title="Clear all traces">Clear</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Traces</div>
+        <div class="metric-val" id="m-traces">0</div>
+        <div class="metric-sub" id="m-spans">0 spans</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Cost</div>
+        <div class="metric-val cost-accent" id="m-cost">$0.00</div>
+        <div class="metric-sub success-accent" id="m-savings">Saved $0.00 cache</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Tokens (In / Out)</div>
+        <div class="metric-val" id="m-tokens">0 / 0</div>
+        <div class="metric-sub" id="m-cache-hit">0% Cache Hit</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Latency (Avg / P95)</div>
+        <div class="metric-val" id="m-latency">0ms / 0ms</div>
+        <div class="metric-sub">Response time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Tool Calls</div>
+        <div class="metric-val" id="m-tools">0</div>
+        <div class="metric-sub" id="m-tool-types">0 distinct tools</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Errors</div>
+        <div class="metric-val" id="m-errors">0</div>
+        <div class="metric-sub" id="m-error-rate">0.0% failure rate</div>
+      </div>
+    </section>
+
+    <!-- Tab 1: Traces Waterfall -->
+    <div id="tab-traces" class="tab-pane active">
+      <div class="panel-toolbar">
+        <input type="text" id="trace-search" class="search-input" placeholder="Search prompts, traces, tools, projects...">
+        <select id="status-filter" class="select-input">
+          <option value="">All Statuses</option>
+          <option value="SUCCESS">Success Only</option>
+          <option value="ERROR">Errors Only</option>
+        </select>
+      </div>
+      <div class="waterfall-container" id="traces-list"><div class="empty-state">Loading traces...</div></div>
+    </div>
+
+    <!-- Tab 2: Sessions -->
+    <div id="tab-sessions" class="tab-pane">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr><th>Session ID</th><th>Project</th><th>Turns</th><th>Total Cost</th><th>Tokens</th><th>Cache Hit %</th><th>Status</th><th>Updated</th></tr>
+          </thead>
+          <tbody id="sessions-tbody"><tr><td colspan="8" class="text-center">Loading sessions...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Tool Analytics -->
+    <div id="tab-analytics" class="tab-pane">
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <h3>Claude Code Tool Executions</h3>
+          <table class="data-table">
+            <thead><tr><th>Tool Name</th><th>Calls</th><th>Avg Latency</th><th>Errors</th></tr></thead>
+            <tbody id="tool-stats-tbody"><tr><td colspan="4" class="text-center">No tool data recorded</td></tr></tbody>
+          </table>
+        </div>
+        <div class="analytics-card">
+          <h3>Model Expenditure & Tokens</h3>
+          <table class="data-table">
+            <thead><tr><th>Model</th><th>Calls</th><th>Total Tokens</th><th>Cost (USD)</th></tr></thead>
+            <tbody id="model-stats-tbody"><tr><td colspan="4" class="text-center">No model data recorded</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Guide -->
+    <div id="tab-guide" class="tab-pane">
+      <div class="guide-container">
+        <h2>Connecting Claude Code CLI to this Observability Platform</h2>
+        <p>Claude Code includes native OpenTelemetry (OTel) support. Configure your terminal:</p>
+        <div class="code-block"><pre><code>export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:3000/v1/traces"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
+claude "Refactor the auth handler and run tests"</code></pre></div>
+        <h3>Using with Langfuse SDK or Claude Hooks</h3>
+        <p>Stream JSON events to <code>POST /api/v1/events</code> or use Langfuse batch ingestion at <code>POST /api/public/ingestion</code>.</p>
+      </div>
+    </div>
+  </main>
+
+  <div id="span-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3 id="modal-title">Span Details</h3><button id="modal-close" class="btn-close">&times;</button></div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="sim-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Simulate Claude Code Agent Task</h3><button id="sim-close" class="btn-close">&times;</button></div>
+      <div class="modal-body">
+        <form id="sim-form">
+          <label for="sim-prompt">Agent Task Prompt:</label>
+          <textarea id="sim-prompt" rows="3" class="input-area" placeholder="e.g., Run test suite and fix failing cases in trace_service.go">Run test suite and fix failing cases in trace_service.go</textarea>
+          <div class="form-row">
+            <label for="sim-model">Model:</label>
+            <select id="sim-model" class="select-input">
+              <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
+              <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+              <option value="claude-3-5-haiku">Claude 3.5 Haiku</option>
+              <option value="claude-3-opus">Claude 3 Opus</option>
+            </select>
+          </div>
+          <div class="modal-actions"><button type="submit" id="btn-run-sim" class="btn btn-primary">Execute Agent Task</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/metrics.js"></script>
+  <script src="js/waterfall.js"></script>
+  <script src="js/sessions.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
