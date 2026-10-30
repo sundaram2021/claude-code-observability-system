@@ -1,0 +1,44 @@
+cmd/server/main.go
+  h_004cd95484b0ae 1-76
+cmd/server/main_test.go
+  h_004cd95484b0ae 1-43
+web/embed.go
+  h_004cd95484b0ae 1-16
+web/embed_test.go
+  h_004cd95484b0ae 1-30
+web/static/css/base.css
+  h_004cd95484b0ae 1-68
+web/static/css/components.css
+  h_004cd95484b0ae 1-155
+web/static/css/layout.css
+  h_004cd95484b0ae 1-137
+web/static/css/waterfall.css
+  h_004cd95484b0ae 1-136
+web/static/index.html
+  h_004cd95484b0ae 1-167
+web/static/js/api.js
+  h_004cd95484b0ae 1-75
+web/static/js/app.js
+  h_004cd95484b0ae 1-122
+web/static/js/metrics.js
+  h_004cd95484b0ae 1-75
+web/static/js/sessions.js
+  h_004cd95484b0ae 1-43
+web/static/js/simulator.js
+  h_004cd95484b0ae 1-50
+web/static/js/state.js
+  h_004cd95484b0ae 1-50
+web/static/js/waterfall.js
+  h_004cd95484b0ae 1-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af318097c8f8b9bdf850331a0e9214936216c30b",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
