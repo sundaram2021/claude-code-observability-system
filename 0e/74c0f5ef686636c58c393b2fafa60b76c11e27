@@ -1,0 +1,20 @@
+internal/agent/agent_test.go
+  h_004cd95484b0ae 1-121
+internal/agent/runner.go
+  h_004cd95484b0ae 1-181
+internal/agent/tools.go
+  h_004cd95484b0ae 1-138
+internal/agent/types.go
+  h_004cd95484b0ae 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e74c0f5ef686636c58c393b2fafa60b76c11e27",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
