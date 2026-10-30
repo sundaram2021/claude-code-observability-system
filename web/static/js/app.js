@@ -14,6 +14,13 @@ const App = {
       }
     });
 
+    const btnExport = document.getElementById('btn-export');
+    if (btnExport) {
+      btnExport.addEventListener('click', () => {
+        window.open('/api/v1/traces/export', '_blank');
+      });
+    }
+
     API.connectSSE(
       () => this.refreshAll(),
       (connected) => {
@@ -70,16 +77,40 @@ const App = {
   },
 
   setupModals() {
-    const modal = document.getElementById('span-modal');
+    const spanModal = document.getElementById('span-modal');
     document.getElementById('modal-close').addEventListener('click', () => {
-      modal.classList.add('hidden');
+      spanModal.classList.add('hidden');
     });
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.add('hidden');
-    });
+
+    const scoreModal = document.getElementById('score-modal');
+    const scoreClose = document.getElementById('score-close');
+    if (scoreClose) {
+      scoreClose.addEventListener('click', () => scoreModal.classList.add('hidden'));
+    }
+
+    const scoreForm = document.getElementById('score-form');
+    if (scoreForm) {
+      scoreForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const traceId = document.getElementById('score-trace-id').value;
+        const name = document.getElementById('score-name').value.trim();
+        const value = parseFloat(document.getElementById('score-value').value);
+        const comment = document.getElementById('score-comment').value.trim();
+
+        try {
+          await API.createScore({ traceId, name, value, comment });
+          scoreModal.classList.add('hidden');
+          await this.loadTraces();
+        } catch (err) {
+          alert('Failed to save score: ' + err.message);
+        }
+      });
+    }
+
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        modal.classList.add('hidden');
+        spanModal.classList.add('hidden');
+        if (scoreModal) scoreModal.classList.add('hidden');
         document.getElementById('sim-modal').classList.add('hidden');
       }
     });
@@ -119,4 +150,3 @@ const App = {
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
-

@@ -12,6 +12,8 @@ type TraceFilter struct {
 	Status    SpanStatus
 	Tool      string
 	Model     string
+	Tag       string
+	UserID    string
 	Search    string
 	Limit     int
 	Offset    int
@@ -34,6 +36,8 @@ func ParseTraceFilter(q url.Values) TraceFilter {
 		Status:    SpanStatus(strings.ToUpper(strings.TrimSpace(q.Get("status")))),
 		Tool:      strings.TrimSpace(q.Get("tool")),
 		Model:     strings.TrimSpace(q.Get("model")),
+		Tag:       strings.TrimSpace(q.Get("tag")),
+		UserID:    strings.TrimSpace(q.Get("userId")),
 		Search:    strings.TrimSpace(q.Get("search")),
 		Limit:     limit,
 		Offset:    offset,
@@ -48,6 +52,12 @@ func (f *TraceFilter) Matches(t *Trace) bool {
 	if f.Status != "" && t.Status != f.Status {
 		return false
 	}
+	if f.UserID != "" && t.UserID != f.UserID {
+		return false
+	}
+	if f.Tag != "" && !hasTag(t.Tags, f.Tag) {
+		return false
+	}
 	if f.Search != "" {
 		s := strings.ToLower(f.Search)
 		if !strings.Contains(strings.ToLower(t.Name), s) &&
@@ -59,3 +69,11 @@ func (f *TraceFilter) Matches(t *Trace) bool {
 	return true
 }
 
+func hasTag(tags []string, target string) bool {
+	for _, tag := range tags {
+		if strings.EqualFold(tag, target) {
+			return true
+		}
+	}
+	return false
+}

@@ -11,6 +11,8 @@ type RouterConfig struct {
 	TraceHandler   *TraceHandler
 	SessionHandler *SessionHandler
 	MetricsHandler *MetricsHandler
+	ScoreHandler   *ScoreHandler
+	ExportHandler  *ExportHandler
 	IngestHandler  *IngestHandler
 	AgentHandler   *AgentHandler
 	SSEHandler     *SSEHandler
@@ -22,35 +24,58 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	mux := http.NewServeMux()
 
 	// Traces API
-	mux.HandleFunc("GET /api/v1/traces", cfg.TraceHandler.ListTraces)
-	mux.HandleFunc("GET /api/v1/traces/{id}", cfg.TraceHandler.GetTrace)
-	mux.HandleFunc("POST /api/v1/traces", cfg.TraceHandler.CreateTrace)
-	mux.HandleFunc("DELETE /api/v1/traces", cfg.TraceHandler.ClearTraces)
+	if cfg.TraceHandler != nil {
+		mux.HandleFunc("GET /api/v1/traces", cfg.TraceHandler.ListTraces)
+		mux.HandleFunc("GET /api/v1/traces/{id}", cfg.TraceHandler.GetTrace)
+		mux.HandleFunc("POST /api/v1/traces", cfg.TraceHandler.CreateTrace)
+		mux.HandleFunc("DELETE /api/v1/traces", cfg.TraceHandler.ClearTraces)
+	}
+
+	// Export API
+	if cfg.ExportHandler != nil {
+		mux.HandleFunc("GET /api/v1/traces/export", cfg.ExportHandler.ExportTraces)
+	}
+
+	// Scores & Evaluations API
+	if cfg.ScoreHandler != nil {
+		mux.HandleFunc("POST /api/v1/scores", cfg.ScoreHandler.CreateScore)
+		mux.HandleFunc("GET /api/v1/scores", cfg.ScoreHandler.ListScores)
+		mux.HandleFunc("GET /api/v1/traces/{id}/scores", cfg.ScoreHandler.GetTraceScores)
+	}
 
 	// Sessions API
-	mux.HandleFunc("GET /api/v1/sessions", cfg.SessionHandler.ListSessions)
-	mux.HandleFunc("GET /api/v1/sessions/{id}", cfg.SessionHandler.GetSession)
+	if cfg.SessionHandler != nil {
+		mux.HandleFunc("GET /api/v1/sessions", cfg.SessionHandler.ListSessions)
+		mux.HandleFunc("GET /api/v1/sessions/{id}", cfg.SessionHandler.GetSession)
+	}
 
 	// Metrics API
-	mux.HandleFunc("GET /api/v1/metrics", cfg.MetricsHandler.GetMetrics)
+	if cfg.MetricsHandler != nil {
+		mux.HandleFunc("GET /api/v1/metrics", cfg.MetricsHandler.GetMetrics)
+	}
 
 	// Ingestion Endpoints (OTLP, Claude Hooks, Langfuse, Legacy)
-	mux.HandleFunc("POST /v1/traces", cfg.IngestHandler.IngestOTLP)
-	mux.HandleFunc("POST /api/v1/events", cfg.IngestHandler.IngestClaudeEvent)
-	mux.HandleFunc("POST /api/public/ingestion", cfg.IngestHandler.IngestLangfuse)
-	mux.HandleFunc("GET /api/telemetry", cfg.IngestHandler.GetTelemetryLegacy)
+	if cfg.IngestHandler != nil {
+		mux.HandleFunc("POST /v1/traces", cfg.IngestHandler.IngestOTLP)
+		mux.HandleFunc("POST /api/v1/events", cfg.IngestHandler.IngestClaudeEvent)
+		mux.HandleFunc("POST /api/public/ingestion", cfg.IngestHandler.IngestLangfuse)
+		mux.HandleFunc("GET /api/telemetry", cfg.IngestHandler.GetTelemetryLegacy)
+	}
 
 	// Agent & Chat Endpoints
-	mux.HandleFunc("POST /api/v1/agent/run", cfg.AgentHandler.RunAgent)
-	mux.HandleFunc("POST /api/chat", cfg.AgentHandler.LegacyChat)
+	if cfg.AgentHandler != nil {
+		mux.HandleFunc("POST /api/v1/agent/run", cfg.AgentHandler.RunAgent)
+		mux.HandleFunc("POST /api/chat", cfg.AgentHandler.LegacyChat)
+	}
 
 	// Realtime SSE
-	mux.Handle("GET /api/v1/live", cfg.SSEHandler)
+	if cfg.SSEHandler != nil {
+		mux.Handle("GET /api/v1/live", cfg.SSEHandler)
+	}
 
 	// Static UI Dashboard
 	if cfg.StaticFS != nil {
-		fileServer := http.FileServer(cfg.StaticFS)
-		mux.Handle("/", fileServer)
+		mux.Handle("/", http.FileServer(cfg.StaticFS))
 	}
 
 	return withMiddleware(mux)
@@ -60,7 +85,6 @@ func withMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key")
@@ -70,7 +94,6 @@ func withMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Panic recovery
 		defer func() {
 			if rec := recover(); rec != nil {
 				log.Printf("[PANIC] %s %s: %v", r.Method, r.URL.Path, rec)
@@ -85,4 +108,3 @@ func withMiddleware(next http.Handler) http.Handler {
 		}
 	})
 }
-

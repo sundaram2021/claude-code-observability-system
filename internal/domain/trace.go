@@ -34,11 +34,11 @@ type TokenUsage struct {
 
 // ToolCall contains specific execution details for Claude Code tool invocations.
 type ToolCall struct {
-	Name      string `json:"name"`
-	Input     string `json:"input"`
-	Output    string `json:"output"`
-	ExitCode  int    `json:"exitCode,omitempty"`
-	IsError   bool   `json:"isError"`
+	Name     string `json:"name"`
+	Input    string `json:"input"`
+	Output   string `json:"output"`
+	ExitCode int    `json:"exitCode,omitempty"`
+	IsError  bool   `json:"isError"`
 }
 
 // Span represents a single unit of work in Claude Code observability.
@@ -69,6 +69,9 @@ type Trace struct {
 	Project     string            `json:"project,omitempty"`
 	Name        string            `json:"name"`
 	Status      SpanStatus        `json:"status"`
+	UserID      string            `json:"userId,omitempty"`
+	Tags        []string          `json:"tags,omitempty"`
+	Scores      []*Score          `json:"scores,omitempty"`
 	StartTime   time.Time         `json:"startTime"`
 	EndTime     time.Time         `json:"endTime"`
 	DurationMs  float64           `json:"durationMs"`
@@ -91,3 +94,9 @@ func (s *Span) CalculateDuration() {
 	}
 }
 
+// AddScore attaches an evaluation score to the trace.
+func (t *Trace) AddScore(score *Score) {
+	if score != nil {
+		t.Scores = append(t.Scores, score)
+	}
+}

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/claude-code/observability/internal/agent"
+	"github.com/claude-code/observability/internal/cli"
 	"github.com/claude-code/observability/internal/config"
 	"github.com/claude-code/observability/internal/handler"
 	"github.com/claude-code/observability/internal/repository"
@@ -21,11 +22,13 @@ import (
 // BuildServer constructs and wires the HTTP server instance.
 func BuildServer(cfg *config.Config) *http.Server {
 	store := repository.NewMemoryStore(cfg.MaxTraces, cfg.MaxSessions)
+	scoreStore := repository.NewScoreStore(cfg.MaxTraces)
 
 	eventBus := service.NewEventBus()
 	traceSvc := service.NewTraceService(store, eventBus)
 	sessSvc := service.NewSessionService(store, store)
 	metricSvc := service.NewMetricsService(store, store)
+	scoreSvc := service.NewScoreService(scoreStore, store)
 
 	runner := agent.NewRunner(traceSvc, cfg.AnthropicAPIKey, cfg.DefaultModel)
 
@@ -33,6 +36,8 @@ func BuildServer(cfg *config.Config) *http.Server {
 		TraceHandler:   handler.NewTraceHandler(traceSvc, store),
 		SessionHandler: handler.NewSessionHandler(sessSvc),
 		MetricsHandler: handler.NewMetricsHandler(metricSvc),
+		ScoreHandler:   handler.NewScoreHandler(scoreSvc),
+		ExportHandler:  handler.NewExportHandler(traceSvc),
 		IngestHandler:  handler.NewIngestHandler(traceSvc),
 		AgentHandler:   handler.NewAgentHandler(runner),
 		SSEHandler:     handler.NewSSEHandler(eventBus),
@@ -49,8 +54,25 @@ func BuildServer(cfg *config.Config) *http.Server {
 
 func main() {
 	cfg := config.Load()
-	srv := BuildServer(cfg)
 
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "start":
+			if err := cli.StartBackground(cfg.Port); err != nil {
+				log.Fatalf("Failed to start daemon: %v", err)
+			}
+			_ = cli.OpenBrowser(fmt.Sprintf("http://localhost:%d", cfg.Port))
+			return
+		case "status":
+			_ = cli.PrintStatus(cfg.Port)
+			return
+		case "open":
+			_ = cli.OpenBrowser(fmt.Sprintf("http://localhost:%d", cfg.Port))
+			return
+		}
+	}
+
+	srv := BuildServer(cfg)
 	go func() {
 		log.Printf("==========================================================")
 		log.Printf(" Claude Code Observability (Langfuse for Claude Code)")
@@ -68,9 +90,6 @@ func main() {
 	log.Println("Shutting down server gracefully...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
-	}
+	_ = srv.Shutdown(ctx)
 	log.Println("Server exited cleanly.")
 }

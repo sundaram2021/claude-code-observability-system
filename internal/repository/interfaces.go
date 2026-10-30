@@ -29,3 +29,9 @@ type SessionRepository interface {
 	ListSessions(limit, offset int) ([]domain.SessionSummary, int, error)
 }
 
+// ScoreRepository defines operations for managing evaluation scores.
+type ScoreRepository interface {
+	SaveScore(score *domain.Score) error
+	GetScores(traceID string) ([]*domain.Score, error)
+	ListAllScores() ([]*domain.Score, error)
+}

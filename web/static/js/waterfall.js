@@ -16,6 +16,14 @@ const WaterfallView = {
     const spans = trace.spans || [];
     const statusClass = trace.status === 'ERROR' ? 'badge-error' : 'badge-success';
 
+    const tagsHtml = (trace.tags || [])
+      .map((tag) => `<span class="badge" style="background:#21262d;color:#a371f7">#${escapeHtml(tag)}</span>`)
+      .join(' ');
+
+    const scoresHtml = (trace.scores || [])
+      .map((s) => `<span class="badge" style="background:rgba(210,153,34,0.15);color:#d29922">★ ${escapeHtml(s.name)}: ${s.value}</span>`)
+      .join(' ');
+
     return `
       <div class="trace-card" data-trace-id="${trace.id}">
         <div class="trace-header">
@@ -23,12 +31,15 @@ const WaterfallView = {
             <span class="badge ${statusClass}">${trace.status}</span>
             <span>${escapeHtml(trace.name || 'Claude Code Execution')}</span>
             ${trace.project ? `<span class="badge" style="background:#21262d;color:#8b949e">${escapeHtml(trace.project)}</span>` : ''}
+            ${tagsHtml}
+            ${scoresHtml}
           </div>
           <div class="trace-meta">
             <span>${formatDuration(trace.durationMs)}</span>
             <span class="cost-accent">${formatUSD(trace.totalCost)}</span>
             <span>${formatTokens(trace.totalTokens?.totalTokens || 0)} toks</span>
             <span>${spans.length} spans</span>
+            <button class="btn btn-secondary btn-score" data-trace-id="${trace.id}" style="padding:2px 8px;font-size:11px">+ Score</button>
             <span>${timeAgo(trace.startTime)}</span>
           </div>
         </div>
@@ -84,6 +95,15 @@ const WaterfallView = {
         this.openSpanModal(traceId, spanId);
       });
     });
+
+    document.querySelectorAll('.btn-score').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const traceId = btn.getAttribute('data-trace-id');
+        document.getElementById('score-trace-id').value = traceId;
+        document.getElementById('score-modal').classList.remove('hidden');
+      });
+    });
   },
 
   openSpanModal(traceId, spanId) {
@@ -125,4 +145,3 @@ const WaterfallView = {
     document.getElementById('span-modal').classList.remove('hidden');
   },
 };
-

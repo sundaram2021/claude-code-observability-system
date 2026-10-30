@@ -9,7 +9,7 @@ type LangfuseIngestionPayload struct {
 
 type LangfuseBatchItem struct {
 	ID        string              `json:"id"`
-	Type      string              `json:"type"` // "trace-create", "span-create", "generation-create"
+	Type      string              `json:"type"` // "trace-create", "span-create", "score-create"
 	Timestamp time.Time           `json:"timestamp"`
 	Body      LangfuseObservation `json:"body"`
 }
@@ -25,6 +25,8 @@ type LangfuseObservation struct {
 	Model               string            `json:"model,omitempty"`
 	Input               any               `json:"input,omitempty"`
 	Output              any               `json:"output,omitempty"`
+	Value               float64           `json:"value,omitempty"`
+	Comment             string            `json:"comment,omitempty"`
 	Usage               *LangfuseUsage    `json:"usage,omitempty"`
 	StatusMessage       string            `json:"statusMessage,omitempty"`
 	Level               string            `json:"level,omitempty"` // "DEFAULT", "ERROR", "WARNING"
@@ -41,4 +43,3 @@ type LangfuseUsage struct {
 	PromptTokens     int     `json:"promptTokens"`
 	CompletionTokens int     `json:"completionTokens"`
 }
-

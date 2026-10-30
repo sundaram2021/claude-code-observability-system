@@ -36,6 +36,16 @@ const API = {
     return res.json();
   },
 
+  async createScore(payload) {
+    const res = await fetch('/api/v1/scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  },
+
   async clearTraces() {
     const res = await fetch('/api/v1/traces', { method: 'DELETE' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -72,4 +82,3 @@ const API = {
     connect();
   },
 };
-

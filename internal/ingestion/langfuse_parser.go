@@ -22,19 +22,12 @@ func ParseLangfuseBatch(payload *LangfuseIngestionPayload) []*domain.Trace {
 			traceMap[t.ID] = t
 		case "span-create", "generation-create", "event-create":
 			span := createSpanFromLangfuse(item)
-			trace, exists := traceMap[span.TraceID]
-			if !exists {
-				trace = &domain.Trace{
-					ID:        span.TraceID,
-					SessionID: span.SessionID,
-					Name:      span.Name,
-					StartTime: span.StartTime,
-					EndTime:   span.EndTime,
-					Spans:     make([]*domain.Span, 0, 4),
-				}
-				traceMap[span.TraceID] = trace
-			}
+			trace := getOrCreateTrace(traceMap, span.TraceID, span.SessionID, span.Name, span.StartTime, span.EndTime)
 			trace.Spans = append(trace.Spans, span)
+		case "score-create":
+			score := createScoreFromLangfuse(item)
+			trace := getOrCreateTrace(traceMap, score.TraceID, "", "Scored Trace", item.Timestamp, item.Timestamp)
+			trace.AddScore(score)
 		}
 	}
 
@@ -43,6 +36,22 @@ func ParseLangfuseBatch(payload *LangfuseIngestionPayload) []*domain.Trace {
 		result = append(result, t)
 	}
 	return result
+}
+
+func getOrCreateTrace(m map[string]*domain.Trace, id, sessID, name string, start, end time.Time) *domain.Trace {
+	trace, exists := m[id]
+	if !exists {
+		trace = &domain.Trace{
+			ID:        id,
+			SessionID: sessID,
+			Name:      name,
+			StartTime: start,
+			EndTime:   end,
+			Spans:     make([]*domain.Span, 0, 4),
+		}
+		m[id] = trace
+	}
+	return trace
 }
 
 func createTraceFromLangfuse(body LangfuseObservation) *domain.Trace {
@@ -107,6 +116,19 @@ func createSpanFromLangfuse(item LangfuseBatchItem) *domain.Span {
 		Tool:      tool,
 		Metadata:  b.Metadata,
 	}
+}
+
+func createScoreFromLangfuse(item LangfuseBatchItem) *domain.Score {
+	b := item.Body
+	return domain.NewScore(
+		b.ID,
+		b.TraceID,
+		b.ParentObservationID,
+		b.Name,
+		b.Value,
+		b.Comment,
+		"LANGFUSE_SDK",
+	)
 }
 
 func parseLangfuseStatus(level string) domain.SpanStatus {

@@ -71,12 +71,13 @@
     <!-- Tab 1: Traces Waterfall -->
     <div id="tab-traces" class="tab-pane active">
       <div class="panel-toolbar">
-        <input type="text" id="trace-search" class="search-input" placeholder="Search prompts, traces, tools, projects...">
+        <input type="text" id="trace-search" class="search-input" placeholder="Search prompts, traces, tools, tags, projects...">
         <select id="status-filter" class="select-input">
           <option value="">All Statuses</option>
           <option value="SUCCESS">Success Only</option>
           <option value="ERROR">Errors Only</option>
         </select>
+        <button id="btn-export" class="btn btn-secondary">Export JSON</button>
       </div>
       <div class="waterfall-container" id="traces-list"><div class="empty-state">Loading traces...</div></div>
     </div>
@@ -116,17 +117,21 @@
     <!-- Tab 4: Guide -->
     <div id="tab-guide" class="tab-pane">
       <div class="guide-container">
-        <h2>Connecting Claude Code CLI to this Observability Platform</h2>
-        <p>Claude Code includes native OpenTelemetry (OTel) support. Configure your terminal:</p>
+        <h2>Claude Code Native Integration</h2>
+        <p>Type <code>/observe</code> directly inside Claude Code to spin up the dashboard and stream telemetry!</p>
+        <div class="code-block"><pre><code># Inside Claude Code CLI:
+/observe        # Spins up dashboard and exports OTel environment
+/observe status # Shows real-time tokens, costs, and cache hit rate
+/observe open   # Opens dashboard in your default browser</code></pre></div>
+        <h3>Manual Environment Configuration</h3>
         <div class="code-block"><pre><code>export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:3000/v1/traces"
 export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
 claude "Refactor the auth handler and run tests"</code></pre></div>
-        <h3>Using with Langfuse SDK or Claude Hooks</h3>
-        <p>Stream JSON events to <code>POST /api/v1/events</code> or use Langfuse batch ingestion at <code>POST /api/public/ingestion</code>.</p>
       </div>
     </div>
   </main>
 
+  <!-- Span Detail Modal -->
   <div id="span-modal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header"><h3 id="modal-title">Span Details</h3><button id="modal-close" class="btn-close">&times;</button></div>
@@ -134,20 +139,39 @@ claude "Refactor the auth handler and run tests"</code></pre></div>
     </div>
   </div>
 
+  <!-- Score Evaluation Modal -->
+  <div id="score-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Score Trace Evaluation</h3><button id="score-close" class="btn-close">&times;</button></div>
+      <div class="modal-body">
+        <form id="score-form">
+          <input type="hidden" id="score-trace-id">
+          <label for="score-name">Metric Name:</label>
+          <input type="text" id="score-name" class="input-area" value="quality" required>
+          <label for="score-value">Score Value (0.0 - 1.0):</label>
+          <input type="number" id="score-value" class="input-area" min="0" max="1" step="0.1" value="1.0" required>
+          <label for="score-comment">Comment (Optional):</label>
+          <textarea id="score-comment" rows="2" class="input-area" placeholder="e.g. Accurate reasoning and test fix"></textarea>
+          <div class="modal-actions"><button type="submit" class="btn btn-primary">Save Evaluation</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Simulator Modal -->
   <div id="sim-modal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header"><h3>Simulate Claude Code Agent Task</h3><button id="sim-close" class="btn-close">&times;</button></div>
       <div class="modal-body">
         <form id="sim-form">
           <label for="sim-prompt">Agent Task Prompt:</label>
-          <textarea id="sim-prompt" rows="3" class="input-area" placeholder="e.g., Run test suite and fix failing cases in trace_service.go">Run test suite and fix failing cases in trace_service.go</textarea>
+          <textarea id="sim-prompt" rows="3" class="input-area">Run test suite and fix failing cases in trace_service.go</textarea>
           <div class="form-row">
             <label for="sim-model">Model:</label>
             <select id="sim-model" class="select-input">
               <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
               <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
               <option value="claude-3-5-haiku">Claude 3.5 Haiku</option>
-              <option value="claude-3-opus">Claude 3 Opus</option>
             </select>
           </div>
           <div class="modal-actions"><button type="submit" id="btn-run-sim" class="btn btn-primary">Execute Agent Task</button></div>
