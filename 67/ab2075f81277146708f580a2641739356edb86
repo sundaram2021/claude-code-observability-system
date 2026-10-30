@@ -1,0 +1,20 @@
+.claude/commands/observe.md
+  h_004cd95484b0ae 12-13,16
+internal/handler/ingest_handler.go
+  h_004cd95484b0ae 42-51
+internal/handler/ingest_handler_test.go
+  h_004cd95484b0ae 123-145
+internal/handler/router.go
+  h_004cd95484b0ae 60-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67ab2075f81277146708f580a2641739356edb86",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
