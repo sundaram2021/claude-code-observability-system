@@ -1,0 +1,14 @@
+.gitignore
+  h_004cd95484b0ae 1-16,18-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e33bbe7a9c1dee35157c34e43fcc724bf81b953d",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
