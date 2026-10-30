@@ -53,3 +53,28 @@ type OTLPValue struct {
 	BoolValue   bool    `json:"boolValue,omitempty"`
 }
 
+// OTLPLogsPayload represents the root JSON payload from OpenTelemetry OTLP HTTP log exporters.
+type OTLPLogsPayload struct {
+	ResourceLogs []OTLPResourceLog `json:"resourceLogs"`
+}
+
+type OTLPResourceLog struct {
+	Resource  OTLPResource   `json:"resource"`
+	ScopeLogs []OTLPScopeLog `json:"scopeLogs"`
+}
+
+type OTLPScopeLog struct {
+	Scope      OTLPScope       `json:"scope"`
+	LogRecords []OTLPLogRecord `json:"logRecords"`
+}
+
+type OTLPLogRecord struct {
+	TimeUnixNano         string          `json:"timeUnixNano"`
+	ObservedTimeUnixNano string          `json:"observedTimeUnixNano"`
+	Body                 OTLPValue       `json:"body"`
+	Attributes           []OTLPAttribute `json:"attributes"`
+	TraceID              string          `json:"traceId"`
+	SpanID               string          `json:"spanId"`
+}
+
+

@@ -36,6 +36,18 @@ var ModelRegistry = map[string]ModelRates{
 		CacheWritePerMillion: 1.00,
 		CacheReadPerMillion:  0.08,
 	},
+	"claude-haiku-5-5": {
+		InputPerMillion:      0.80,
+		OutputPerMillion:     4.00,
+		CacheWritePerMillion: 1.00,
+		CacheReadPerMillion:  0.08,
+	},
+	"haiku": {
+		InputPerMillion:      0.80,
+		OutputPerMillion:     4.00,
+		CacheWritePerMillion: 1.00,
+		CacheReadPerMillion:  0.08,
+	},
 	"claude-3-opus": {
 		InputPerMillion:      15.00,
 		OutputPerMillion:     75.00,

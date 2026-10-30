@@ -36,6 +36,28 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 		t.DurationMs = float64(t.EndTime.Sub(t.StartTime).Microseconds()) / 1000.0
 	}
 
+	if existing, err := s.repo.GetTrace(t.ID); err == nil && existing != nil {
+		spanIDs := make(map[string]bool, len(existing.Spans))
+		for _, sp := range existing.Spans {
+			spanIDs[sp.ID] = true
+		}
+		for _, sp := range t.Spans {
+			if !spanIDs[sp.ID] {
+				existing.Spans = append(existing.Spans, sp)
+			}
+		}
+		if t.EndTime.After(existing.EndTime) {
+			existing.EndTime = t.EndTime
+		}
+		if existing.SessionID == "" && t.SessionID != "" {
+			existing.SessionID = t.SessionID
+		}
+		if (existing.Name == "" || existing.Name == "Claude Code Turn") && t.Name != "" && t.Name != "Claude Code Turn" {
+			existing.Name = t.Name
+		}
+		t = existing
+	}
+
 	s.enrichSpans(t)
 	s.calculateTotals(t)
 	t.RootSpan = BuildSpanTree(t.Spans)

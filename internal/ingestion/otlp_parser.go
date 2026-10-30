@@ -123,6 +123,8 @@ func flattenAttributes(attrs []OTLPAttribute) map[string]string {
 			m[a.Key] = a.Value.StringValue
 		} else if a.Value.IntValue != nil {
 			m[a.Key] = strconv.Itoa(toInt(a.Value.IntValue))
+		} else if a.Value.DoubleValue != 0 {
+			m[a.Key] = strconv.FormatFloat(a.Value.DoubleValue, 'f', -1, 64)
 		} else if a.Value.BoolValue {
 			m[a.Key] = "true"
 		}
@@ -132,10 +134,10 @@ func flattenAttributes(attrs []OTLPAttribute) map[string]string {
 
 func extractOTLPUsage(attrs map[string]string) domain.TokenUsage {
 	return domain.TokenUsage{
-		InputTokens:              parseNum(attrs, "gen_ai.usage.input_tokens", "llm.token_count.prompt"),
-		OutputTokens:             parseNum(attrs, "gen_ai.usage.output_tokens", "llm.token_count.completion"),
-		CacheReadInputTokens:     parseNum(attrs, "gen_ai.usage.cache_read_input_tokens", "anthropic.cache_read_tokens"),
-		CacheCreationInputTokens: parseNum(attrs, "gen_ai.usage.cache_creation_input_tokens", "anthropic.cache_creation_tokens"),
+		InputTokens:              parseNum(attrs, "gen_ai.usage.input_tokens", "llm.token_count.prompt", "input_tokens"),
+		OutputTokens:             parseNum(attrs, "gen_ai.usage.output_tokens", "llm.token_count.completion", "output_tokens"),
+		CacheReadInputTokens:     parseNum(attrs, "gen_ai.usage.cache_read_input_tokens", "anthropic.cache_read_tokens", "cache_read_tokens"),
+		CacheCreationInputTokens: parseNum(attrs, "gen_ai.usage.cache_creation_input_tokens", "anthropic.cache_creation_tokens", "cache_creation_tokens"),
 	}
 }
 

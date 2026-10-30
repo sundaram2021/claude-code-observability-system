@@ -93,3 +93,36 @@ func TestTraceService_IngestAndHierarchy(t *testing.T) {
 	}
 }
 
+func TestTraceService_IngestMerge(t *testing.T) {
+	repo := repository.NewMemoryStore(10, 10)
+	svc := service.NewTraceService(repo, nil)
+
+	trc1 := &domain.Trace{
+		ID:        "merge_trc_01",
+		SessionID: "sess_merge",
+		Name:      "Claude Code Turn",
+		Spans: []*domain.Span{
+			{ID: "span_1", TraceID: "merge_trc_01", Name: "Span 1"},
+		},
+	}
+	_ = svc.IngestTrace(trc1)
+
+	trc2 := &domain.Trace{
+		ID:        "merge_trc_01",
+		Name:      "Claude Code (claude-haiku-5-5)",
+		Spans: []*domain.Span{
+			{ID: "span_2", TraceID: "merge_trc_01", Name: "Span 2"},
+		},
+	}
+	_ = svc.IngestTrace(trc2)
+
+	fetched, _ := svc.GetTrace("merge_trc_01")
+	if len(fetched.Spans) != 2 {
+		t.Fatalf("expected 2 merged spans, got %d", len(fetched.Spans))
+	}
+	if fetched.Name != "Claude Code (claude-haiku-5-5)" {
+		t.Errorf("expected updated name, got %s", fetched.Name)
+	}
+}
+
+

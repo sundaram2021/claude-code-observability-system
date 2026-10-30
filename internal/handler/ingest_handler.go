@@ -41,6 +41,20 @@ func (h *IngestHandler) IngestOTLP(w http.ResponseWriter, r *http.Request) {
 
 // IngestOTLPLogs handles POST /v1/logs (OpenTelemetry OTLP/HTTP logs format).
 func (h *IngestHandler) IngestOTLPLogs(w http.ResponseWriter, r *http.Request) {
+	var payload ingestion.OTLPLogsPayload
+	if err := ReadJSON(r, &payload); err != nil {
+		WriteError(w, http.StatusBadRequest, "malformed OTLP logs payload: "+err.Error())
+		return
+	}
+
+	traces := ingestion.ParseOTLPLogs(&payload)
+	for _, t := range traces {
+		if err := h.traceService.IngestTrace(t); err != nil {
+			WriteError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
 	WriteJSON(w, http.StatusOK, map[string]any{"partialSuccess": map[string]any{}})
 }
 

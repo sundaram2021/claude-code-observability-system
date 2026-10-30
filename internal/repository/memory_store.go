@@ -48,11 +48,14 @@ func (s *MemoryStore) SaveTrace(trace *domain.Trace) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	_, exists := s.traceIndex[trace.ID]
 	s.traceIndex[trace.ID] = trace
 	for _, span := range trace.Spans {
 		s.spanIndex[span.ID] = span
 	}
-	s.traces.Push(trace)
+	if !exists {
+		s.traces.Push(trace)
+	}
 
 	if trace.SessionID != "" {
 		s.updateSessionUnderLock(trace)
