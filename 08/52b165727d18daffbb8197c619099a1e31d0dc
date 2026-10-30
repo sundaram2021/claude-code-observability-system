@@ -1,0 +1,16 @@
+run-claude.cmd
+  h_004cd95484b0ae 1-21
+run-claude.ps1
+  h_004cd95484b0ae 1-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0852b165727d18daffbb8197c619099a1e31d0dc",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
