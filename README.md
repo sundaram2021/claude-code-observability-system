@@ -19,6 +19,12 @@ Trace multi-turn agent sessions, inspect tool execution trees (`bash`, `file_edi
 
 </div>
 
+## UI Demo
+<img width="1917" height="905" alt="image" src="https://github.com/user-attachments/assets/f229445d-0180-467b-b9b0-95ea767a1ad9" />
+<img width="1917" height="512" alt="image" src="https://github.com/user-attachments/assets/1cbda607-6da0-44c4-a639-b825ba236386" />
+<img width="1917" height="782" alt="image" src="https://github.com/user-attachments/assets/32697036-0659-4b74-ba96-7cab6515eb04" />
+
+
 ## 💡 Why Claude Code Observability?
 
 Anthropic's **Claude Code** is one of the most capable agentic coding tools in developer workflows. However, running autonomous agents locally introduces new challenges:
