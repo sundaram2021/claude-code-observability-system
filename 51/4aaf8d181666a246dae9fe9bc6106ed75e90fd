@@ -1,0 +1,32 @@
+README.md
+  h_004cd95484b0ae 1,3-4,6-73,77-94,96,98-108,112-115,119-121,124-129,133-134,137-152,155-156,159-167,169-171,173-175,180,182,184-236,240,242
+internal/domain/pricing.go
+  h_004cd95484b0ae 39-50
+internal/handler/ingest_handler.go
+  h_004cd95484b0ae 44-57
+internal/ingestion/otlp_log_parser.go
+  h_004cd95484b0ae 1-179
+internal/ingestion/otlp_log_parser_test.go
+  h_004cd95484b0ae 1-126
+internal/ingestion/otlp_parser.go
+  h_004cd95484b0ae 126-127,137-140
+internal/ingestion/otlp_types.go
+  h_004cd95484b0ae 56-80
+internal/repository/memory_store.go
+  h_004cd95484b0ae 51,56-58
+internal/service/trace_service.go
+  h_004cd95484b0ae 39-60
+internal/service/trace_service_test.go
+  h_004cd95484b0ae 96-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "514aaf8d181666a246dae9fe9bc6106ed75e90fd",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
