@@ -1,0 +1,40 @@
+internal/handler/agent_handler.go
+  h_004cd95484b0ae 1-70
+internal/handler/coverage_boost_test.go
+  h_004cd95484b0ae 1-111
+internal/handler/e2e_test.go
+  h_004cd95484b0ae 1-111
+internal/handler/failing_repo_test.go
+  h_004cd95484b0ae 1-127
+internal/handler/handler_extra_test.go
+  h_004cd95484b0ae 1-109
+internal/handler/handler_routes_test.go
+  h_004cd95484b0ae 1-166
+internal/handler/ingest_handler.go
+  h_004cd95484b0ae 1-101
+internal/handler/ingest_handler_test.go
+  h_004cd95484b0ae 1-122
+internal/handler/metrics_handler.go
+  h_004cd95484b0ae 1-30
+internal/handler/response_helper.go
+  h_004cd95484b0ae 1-45
+internal/handler/router.go
+  h_004cd95484b0ae 1-88
+internal/handler/session_handler.go
+  h_004cd95484b0ae 1-67
+internal/handler/sse_handler.go
+  h_004cd95484b0ae 1-64
+internal/handler/trace_handler.go
+  h_004cd95484b0ae 1-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a19e3973ca522de969c41e45d927d09fccb5076b",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
