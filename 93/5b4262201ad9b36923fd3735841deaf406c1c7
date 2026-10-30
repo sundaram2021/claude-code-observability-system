@@ -1,0 +1,32 @@
+.claude/commands/observe.md
+  h_004cd95484b0ae 37
+internal/cli/daemon.go
+  h_004cd95484b0ae 11,41-50
+internal/domain/score.go
+  h_004cd95484b0ae 33
+internal/domain/score_test.go
+  h_004cd95484b0ae 60
+internal/handler/export_handler.go
+  h_004cd95484b0ae 48
+internal/handler/score_handler.go
+  h_004cd95484b0ae 73
+internal/repository/score_store.go
+  h_004cd95484b0ae 87
+internal/repository/score_store_test.go
+  h_004cd95484b0ae 49
+internal/service/score_service.go
+  h_004cd95484b0ae 56
+internal/service/score_service_test.go
+  h_004cd95484b0ae 62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "935b4262201ad9b36923fd3735841deaf406c1c7",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
