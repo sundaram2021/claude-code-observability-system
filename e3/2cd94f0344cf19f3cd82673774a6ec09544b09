@@ -1,0 +1,32 @@
+internal/ingestion/claude_parser.go
+  h_004cd95484b0ae 1-131
+internal/ingestion/claude_parser_test.go
+  h_004cd95484b0ae 1-75
+internal/ingestion/claude_types.go
+  h_004cd95484b0ae 1-45
+internal/ingestion/ingestion_edge_test.go
+  h_004cd95484b0ae 1-88
+internal/ingestion/langfuse_parser.go
+  h_004cd95484b0ae 1-131
+internal/ingestion/langfuse_parser_test.go
+  h_004cd95484b0ae 1-107
+internal/ingestion/langfuse_types.go
+  h_004cd95484b0ae 1-44
+internal/ingestion/otlp_parser.go
+  h_004cd95484b0ae 1-177
+internal/ingestion/otlp_parser_test.go
+  h_004cd95484b0ae 1-90
+internal/ingestion/otlp_types.go
+  h_004cd95484b0ae 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e32cd94f0344cf19f3cd82673774a6ec09544b09",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
