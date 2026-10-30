@@ -1,0 +1,28 @@
+internal/service/coverage_boost_test.go
+  h_004cd95484b0ae 1-55
+internal/service/event_bus.go
+  h_004cd95484b0ae 1-82
+internal/service/metrics_service.go
+  h_004cd95484b0ae 1-119
+internal/service/service_components_test.go
+  h_004cd95484b0ae 1-140
+internal/service/session_service.go
+  h_004cd95484b0ae 1-48
+internal/service/trace_service.go
+  h_004cd95484b0ae 1-118
+internal/service/trace_service_test.go
+  h_004cd95484b0ae 1-95
+internal/service/tree_builder.go
+  h_004cd95484b0ae 1-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b798c410429daee5e6901654adab469ef93a9da5",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
