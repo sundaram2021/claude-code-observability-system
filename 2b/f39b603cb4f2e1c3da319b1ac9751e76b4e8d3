@@ -1,0 +1,14 @@
+README.md
+  h_004cd95484b0ae 1,3,5-7,13-16,19-27,30-34,37-49,52,54,56-71,73,75,77,79-83,85,87-88,90-99,102-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2bf39b603cb4f2e1c3da319b1ac9751e76b4e8d3",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
