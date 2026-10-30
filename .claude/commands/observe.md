@@ -9,15 +9,11 @@ The user ran `/observe` (with optional arguments: `$ARGUMENTS`).
 
 1. **If argument is empty or "start"**:
    - Check if the observability server is running on `http://localhost:3000`.
-   - If not running, execute `./bin/server.exe start` (or `go run ./cmd/server start`) using the bash tool.
-   - Configure the current environment:
-     ```bash
-     export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:3000/v1/traces"
-     export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
-     ```
+   - If not running, execute `./bin/server.exe start` using the bash tool.
+   - Note: Telemetry is automatically loaded from `.claude/settings.json` into Claude Code.
    - Inform the user:
      > 🚀 **Claude Code Observability is active at http://localhost:3000**
-     > - All tool executions (`bash`, `file_edit`, `glob`, `view`), LLM generations, and prompt cache savings are streaming live.
+     > - All tool executions (`bash`, `file_edit`, `glob`, `view`), LLM generations, and prompt cache savings stream live.
      > - Open `http://localhost:3000` to inspect waterfall traces and session analytics.
 
 2. **If argument is "status"**:

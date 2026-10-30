@@ -39,6 +39,16 @@ func (h *IngestHandler) IngestOTLP(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusOK, map[string]any{"partialSuccess": map[string]any{}})
 }
 
+// IngestOTLPLogs handles POST /v1/logs (OpenTelemetry OTLP/HTTP logs format).
+func (h *IngestHandler) IngestOTLPLogs(w http.ResponseWriter, r *http.Request) {
+	WriteJSON(w, http.StatusOK, map[string]any{"partialSuccess": map[string]any{}})
+}
+
+// IngestOTLPMetrics handles POST /v1/metrics (OpenTelemetry OTLP/HTTP metrics format).
+func (h *IngestHandler) IngestOTLPMetrics(w http.ResponseWriter, r *http.Request) {
+	WriteJSON(w, http.StatusOK, map[string]any{"partialSuccess": map[string]any{}})
+}
+
 // IngestClaudeEvent handles POST /api/v1/events (Claude Code hook events).
 func (h *IngestHandler) IngestClaudeEvent(w http.ResponseWriter, r *http.Request) {
 	var event ingestion.ClaudeEventPayload

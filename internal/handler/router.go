@@ -57,6 +57,8 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	// Ingestion Endpoints (OTLP, Claude Hooks, Langfuse, Legacy)
 	if cfg.IngestHandler != nil {
 		mux.HandleFunc("POST /v1/traces", cfg.IngestHandler.IngestOTLP)
+		mux.HandleFunc("POST /v1/logs", cfg.IngestHandler.IngestOTLPLogs)
+		mux.HandleFunc("POST /v1/metrics", cfg.IngestHandler.IngestOTLPMetrics)
 		mux.HandleFunc("POST /api/v1/events", cfg.IngestHandler.IngestClaudeEvent)
 		mux.HandleFunc("POST /api/public/ingestion", cfg.IngestHandler.IngestLangfuse)
 		mux.HandleFunc("GET /api/telemetry", cfg.IngestHandler.GetTelemetryLegacy)

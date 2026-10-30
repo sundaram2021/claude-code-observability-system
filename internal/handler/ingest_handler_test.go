@@ -120,3 +120,26 @@ func TestIngestHandler_ClaudeEventEndpoint(t *testing.T) {
 	}
 }
 
+func TestIngestHandler_OTLPLogsAndMetrics(t *testing.T) {
+	router := setupTestRouter()
+
+	reqLogs := httptest.NewRequest(http.MethodPost, "/v1/logs", bytes.NewBufferString(`{}`))
+	reqLogs.Header.Set("Content-Type", "application/json")
+	wLogs := httptest.NewRecorder()
+	router.ServeHTTP(wLogs, reqLogs)
+
+	if wLogs.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for /v1/logs, got %d", wLogs.Code)
+	}
+
+	reqMetrics := httptest.NewRequest(http.MethodPost, "/v1/metrics", bytes.NewBufferString(`{}`))
+	reqMetrics.Header.Set("Content-Type", "application/json")
+	wMetrics := httptest.NewRecorder()
+	router.ServeHTTP(wMetrics, reqMetrics)
+
+	if wMetrics.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK for /v1/metrics, got %d", wMetrics.Code)
+	}
+}
+
+
