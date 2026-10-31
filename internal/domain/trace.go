@@ -77,6 +77,7 @@ type Trace struct {
 	SessionID            string            `json:"sessionId,omitempty"`
 	Project              string            `json:"project,omitempty"`
 	Name                 string            `json:"name"`
+	UserPrompt           string            `json:"userPrompt,omitempty"`
 	Status               SpanStatus        `json:"status"`
 	UserID               string            `json:"userId,omitempty"`
 	Tags                 []string          `json:"tags,omitempty"`

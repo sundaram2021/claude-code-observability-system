@@ -62,7 +62,8 @@ func (f *TraceFilter) Matches(t *Trace) bool {
 		s := strings.ToLower(f.Search)
 		if !strings.Contains(strings.ToLower(t.Name), s) &&
 			!strings.Contains(strings.ToLower(t.ID), s) &&
-			!strings.Contains(strings.ToLower(t.Project), s) {
+			!strings.Contains(strings.ToLower(t.Project), s) &&
+			!strings.Contains(strings.ToLower(t.UserPrompt), s) {
 			return false
 		}
 	}

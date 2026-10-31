@@ -172,4 +172,18 @@
 .step-node.error { border-color: rgba(248, 81, 73, 0.4); color: #f85149; }
 .step-arrow { color: var(--text-dim); font-size: 10px; }
 
+.trace-prompt-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px; background: rgba(56, 189, 248, 0.08);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2); font-size: 12px;
+}
+.prompt-tag {
+  font-size: 10px; font-weight: 700; color: #38bdf8;
+  letter-spacing: 0.5px; flex-shrink: 0;
+}
+.prompt-text {
+  color: #f0f6fc; font-weight: 500; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
 

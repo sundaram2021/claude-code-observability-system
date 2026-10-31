@@ -6,7 +6,6 @@ const WaterfallView = {
       container.innerHTML = '<div class="empty-state text-center" style="padding:40px;color:var(--text-muted)">No traces recorded yet. Run a Claude Code task or click "+ Simulate Task".</div>';
       return;
     }
-
     container.innerHTML = traces.map((t) => this.renderTraceCard(t)).join('');
     this.attachEventListeners();
   },
@@ -15,33 +14,29 @@ const WaterfallView = {
     const maxDur = Math.max(trace.durationMs, 1);
     const spans = trace.spans || [];
     const statusClass = trace.status === 'ERROR' ? 'badge-error' : 'badge-success';
+    const displayName = trace.userPrompt || trace.name || 'Claude Code Execution';
 
-    const tagsHtml = (trace.tags || [])
-      .map((tag) => `<span class="badge" style="background:#21262d;color:#a371f7">#${escapeHtml(tag)}</span>`)
-      .join(' ');
-
-    const scoresHtml = (trace.scores || [])
-      .map((s) => `<span class="badge" style="background:rgba(210,153,34,0.15);color:#d29922">★ ${escapeHtml(s.name)}: ${s.value}</span>`)
-      .join(' ');
-
+    const tagsHtml = (trace.tags || []).map((t) => `<span class="badge" style="background:#21262d;color:#a371f7">#${escapeHtml(t)}</span>`).join(' ');
+    const scoresHtml = (trace.scores || []).map((s) => `<span class="badge" style="background:rgba(210,153,34,0.15);color:#d29922">★ ${escapeHtml(s.name)}: ${s.value}</span>`).join(' ');
     const multHtml = trace.cacheMultiplier > 0 ? `<span class="badge" style="background:#1b4721;color:#3fb950">${trace.cacheMultiplier.toFixed(1)}x ROI</span>` : '';
     const speedHtml = trace.tokensPerSec > 0 ? `<span class="badge" style="background:#21262d;color:#58a6ff">⚡ ${trace.tokensPerSec.toFixed(0)} tok/s</span>` : '';
     const ttftHtml = trace.avgTtftMs > 0 ? `<span class="badge" style="background:#21262d;color:#8b949e">⏱️ ${trace.avgTtftMs.toFixed(0)}ms TTFT</span>` : '';
     const healedHtml = trace.selfCorrected ? `<span class="badge" style="background:rgba(56,189,248,0.15);color:#38bdf8">✨ Healed</span>` : '';
+
+    const promptBar = trace.userPrompt ? `
+      <div class="trace-prompt-bar" title="${escapeHtml(trace.userPrompt)}">
+        <span class="prompt-tag">💬 USER PROMPT:</span>
+        <span class="prompt-text">${escapeHtml(trace.userPrompt)}</span>
+      </div>` : '';
 
     return `
       <div class="trace-card" data-trace-id="${trace.id}">
         <div class="trace-header">
           <div class="trace-title">
             <span class="badge ${statusClass}">${trace.status}</span>
-            <span>${escapeHtml(trace.name || 'Claude Code Execution')}</span>
+            <span title="${escapeHtml(displayName)}">${escapeHtml(displayName.length > 70 ? displayName.slice(0, 67) + '...' : displayName)}</span>
             ${trace.project ? `<span class="badge" style="background:#21262d;color:#8b949e">${escapeHtml(trace.project)}</span>` : ''}
-            ${tagsHtml}
-            ${scoresHtml}
-            ${multHtml}
-            ${speedHtml}
-            ${ttftHtml}
-            ${healedHtml}
+            ${tagsHtml} ${scoresHtml} ${multHtml} ${speedHtml} ${ttftHtml} ${healedHtml}
           </div>
           <div class="trace-meta">
             <span>${formatDuration(trace.durationMs)}</span>
@@ -52,14 +47,13 @@ const WaterfallView = {
             <span>${timeAgo(trace.startTime)}</span>
           </div>
         </div>
+        ${promptBar}
         <div class="trace-sub-bar">
           <div style="display:flex;align-items:center;gap:14px">
             ${this.renderTokenBar(trace.totalTokens)}
             ${this.renderContextGauge(trace.contextSaturationPct || 0)}
           </div>
-          <div class="step-flow">
-            ${this.renderStepFlow(spans)}
-          </div>
+          <div class="step-flow">${this.renderStepFlow(spans)}</div>
         </div>
         <div class="trace-body">
           ${spans.map((s) => this.renderSpanRow(s, trace, maxDur)).join('')}
@@ -71,18 +65,14 @@ const WaterfallView = {
   renderTokenBar(u) {
     if (!u || !u.totalTokens) return '';
     const tot = Math.max(u.totalTokens, 1);
-    const readPct = ((u.cacheReadInputTokens || 0) / tot) * 100;
-    const createPct = ((u.cacheCreationInputTokens || 0) / tot) * 100;
-    const inpPct = ((u.inputTokens || 0) / tot) * 100;
-    const outPct = ((u.outputTokens || 0) / tot) * 100;
     return `
       <div style="display:flex;align-items:center;gap:6px" title="Cache Read: ${u.cacheReadInputTokens || 0}, Create: ${u.cacheCreationInputTokens || 0}, In: ${u.inputTokens || 0}, Out: ${u.outputTokens || 0}">
         <span style="color:var(--text-muted)">Tokens:</span>
         <div class="token-bar-container">
-          <div class="seg-read" style="width:${readPct}%"></div>
-          <div class="seg-create" style="width:${createPct}%"></div>
-          <div class="seg-input" style="width:${inpPct}%"></div>
-          <div class="seg-output" style="width:${outPct}%"></div>
+          <div class="seg-read" style="width:${((u.cacheReadInputTokens || 0) / tot) * 100}%"></div>
+          <div class="seg-create" style="width:${((u.cacheCreationInputTokens || 0) / tot) * 100}%"></div>
+          <div class="seg-input" style="width:${((u.inputTokens || 0) / tot) * 100}%"></div>
+          <div class="seg-output" style="width:${((u.outputTokens || 0) / tot) * 100}%"></div>
         </div>
       </div>
     `;
@@ -110,8 +100,7 @@ const WaterfallView = {
   },
 
   renderSpanRow(s, trace, maxDur) {
-    const isRoot = !s.parentId;
-    const indent = isRoot ? 0 : 24;
+    const indent = s.parentId ? 24 : 0;
     const widthPct = Math.max((s.durationMs / maxDur) * 100, 2);
     const isTool = s.kind === 'TOOL' || !!s.tool;
     const isError = s.status === 'ERROR';
@@ -126,13 +115,8 @@ const WaterfallView = {
 
     return `
       <div class="span-row" data-span-id="${s.id}" data-trace-id="${trace.id}" style="padding-left:${indent + 10}px">
-        <div class="span-info">
-          <span class="span-name">${escapeHtml(s.name)}</span>
-        </div>
-        <div class="span-meta">
-          ${metaBadge}
-          ${isError ? `<span class="badge badge-error">ERR</span>` : ''}
-        </div>
+        <div class="span-info"><span class="span-name">${escapeHtml(s.name)}</span></div>
+        <div class="span-meta">${metaBadge} ${isError ? `<span class="badge badge-error">ERR</span>` : ''}</div>
         <div class="span-metrics">
           ${s.tokens?.totalTokens ? `<span>${formatTokens(s.tokens.totalTokens)} t</span>` : ''}
           ${s.costUsd > 0 ? `<span class="cost-accent">${formatUSD(s.costUsd)}</span>` : ''}
@@ -149,17 +133,14 @@ const WaterfallView = {
     document.querySelectorAll('.span-row').forEach((row) => {
       row.addEventListener('click', (e) => {
         e.stopPropagation();
-        const spanId = row.getAttribute('data-span-id');
-        const traceId = row.getAttribute('data-trace-id');
-        this.openSpanModal(traceId, spanId);
+        this.openSpanModal(row.getAttribute('data-trace-id'), row.getAttribute('data-span-id'));
       });
     });
 
     document.querySelectorAll('.btn-score').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const traceId = btn.getAttribute('data-trace-id');
-        document.getElementById('score-trace-id').value = traceId;
+        document.getElementById('score-trace-id').value = btn.getAttribute('data-trace-id');
         document.getElementById('score-modal').classList.remove('hidden');
       });
     });

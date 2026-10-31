@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/claude-code/observability/internal/domain"
 )
@@ -41,6 +40,12 @@ func ParseOTLPTraces(payload *OTLPTracesPayload) []*domain.Trace {
 					traceMap[span.TraceID] = trace
 				}
 				trace.Spans = append(trace.Spans, span)
+				if trace.UserPrompt == "" {
+					trace.UserPrompt = extractPromptFromAttrs(span.Metadata)
+					if trace.UserPrompt != "" && strings.HasPrefix(trace.Name, "claude_code.") {
+						trace.Name = trace.UserPrompt
+					}
+				}
 				if span.StartTime.Before(trace.StartTime) || trace.StartTime.IsZero() {
 					trace.StartTime = span.StartTime
 				}
@@ -176,17 +181,5 @@ func parseNum(attrs map[string]string, keys ...string) int {
 		}
 	}
 	return 0
-}
-
-
-func parseNanoTime(nanoStr string) time.Time {
-	if nanoStr == "" {
-		return time.Now()
-	}
-	nano, err := strconv.ParseInt(nanoStr, 10, 64)
-	if err != nil {
-		return time.Now()
-	}
-	return time.Unix(0, nano)
 }
 

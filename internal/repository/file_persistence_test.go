@@ -82,3 +82,54 @@ func TestFilePersistence_EdgeCases(t *testing.T) {
 	}
 }
 
+func TestFilePersistence_LoadEnrichesPrompts(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "prompt_traces.json")
+
+	store1 := NewMemoryStore(10, 10)
+	// Trace 1: generic name, has user prompt in metadata
+	tr1 := &domain.Trace{
+		ID:        "trc_p1",
+		SessionID: "sess_p1",
+		Name:      "Claude Code Turn",
+		Spans: []*domain.Span{
+			{
+				ID:   "sp_1",
+				Name: "Event: user_prompt",
+				Metadata: map[string]string{
+					"prompt": "explain codebase",
+				},
+			},
+		},
+	}
+	// Trace 2: in same session, but no prompt metadata
+	tr2 := &domain.Trace{
+		ID:        "trc_p2",
+		SessionID: "sess_p1",
+		Name:      "claude_code.llm_request",
+		Spans: []*domain.Span{
+			{ID: "sp_2", Name: "claude_code.llm_request"},
+		},
+	}
+	_ = store1.SaveTrace(tr1)
+	_ = store1.SaveTrace(tr2)
+	if err := SaveToFile(store1, filePath); err != nil {
+		t.Fatalf("SaveToFile failed: %v", err)
+	}
+
+	store2 := NewMemoryStore(10, 10)
+	loaded, err := LoadFromFile(store2, filePath)
+	if err != nil || loaded != 2 {
+		t.Fatalf("LoadFromFile failed: %v, loaded=%d", err, loaded)
+	}
+
+	l1, _ := store2.GetTrace("trc_p1")
+	l2, _ := store2.GetTrace("trc_p2")
+	if l1.UserPrompt != "explain codebase" || l1.Name != "explain codebase" {
+		t.Errorf("expected l1 prompt 'explain codebase', got %s, name %s", l1.UserPrompt, l1.Name)
+	}
+	if l2.UserPrompt != "explain codebase" || l2.Name != "explain codebase" {
+		t.Errorf("expected l2 prompt 'explain codebase', got %s, name %s", l2.UserPrompt, l2.Name)
+	}
+}
+

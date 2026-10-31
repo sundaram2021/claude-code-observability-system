@@ -34,6 +34,7 @@ func BuildServerWithShutdown(cfg *config.Config, onShutdown func()) *http.Server
 
 	eventBus := service.NewEventBus()
 	traceSvc := service.NewTraceService(store, eventBus)
+	traceSvc.SetPersistencePath(repository.DefaultTraceFilePath())
 	sessSvc := service.NewSessionService(store, store)
 	metricSvc := service.NewMetricsService(store, store)
 	scoreSvc := service.NewScoreService(scoreStore, store)

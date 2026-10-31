@@ -55,6 +55,12 @@ func ParseOTLPLogs(payload *OTLPLogsPayload) []*domain.Trace {
 				}
 
 				trace.Spans = append(trace.Spans, span)
+				if trace.UserPrompt == "" {
+					trace.UserPrompt = extractPromptFromAttrs(span.Metadata)
+					if trace.UserPrompt != "" {
+						trace.Name = trace.UserPrompt
+					}
+				}
 				if span.StartTime.Before(trace.StartTime) || trace.StartTime.IsZero() {
 					trace.StartTime = span.StartTime
 				}
@@ -85,6 +91,9 @@ func convertLogRecordToSpan(rec OTLPLogRecord, resAttrs map[string]string) *doma
 	eventName := attrs["event.name"]
 	if eventName == "" {
 		eventName = strings.TrimPrefix(bodyStr, "claude_code.")
+	}
+	if eventName == "user_prompt" && attrs["prompt"] == "" && bodyStr != "" && !strings.HasPrefix(bodyStr, "claude_code.") {
+		attrs["prompt"] = bodyStr
 	}
 
 	sessID := attrs["session.id"]

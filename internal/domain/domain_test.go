@@ -151,5 +151,10 @@ func TestTraceFilter_ParseAndMatches(t *testing.T) {
 	if f.Matches(tMismatchSearch) {
 		t.Errorf("expected search mismatch")
 	}
+
+	tMatchPrompt := &domain.Trace{SessionID: "s_123", Status: domain.StatusError, Name: "Build only", UserPrompt: "please deploy to prod"}
+	if !f.Matches(tMatchPrompt) {
+		t.Errorf("expected filter to match trace via user prompt")
+	}
 }
 

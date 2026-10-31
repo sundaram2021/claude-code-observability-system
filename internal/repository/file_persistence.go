@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/claude-code/observability/internal/domain"
@@ -79,9 +80,42 @@ func LoadFromFile(store TraceRepository, filePath string) (int, error) {
 		return 0, err
 	}
 
+	sessionPrompts := make(map[string]string)
+	for _, t := range traces {
+		if t == nil {
+			continue
+		}
+		if t.UserPrompt == "" {
+			for _, sp := range t.Spans {
+				if sp != nil && sp.Metadata != nil {
+					for _, k := range []string{"user_prompt", "prompt", "gen_ai.prompt", "query"} {
+						if val := sp.Metadata[k]; val != "" {
+							t.UserPrompt = val
+							break
+						}
+					}
+				}
+				if t.UserPrompt != "" {
+					break
+				}
+			}
+		}
+		if t.UserPrompt != "" && t.SessionID != "" {
+			sessionPrompts[t.SessionID] = t.UserPrompt
+		}
+	}
+
 	loaded := 0
 	for _, t := range traces {
 		if t != nil && t.ID != "" {
+			if t.UserPrompt == "" && t.SessionID != "" {
+				if p, ok := sessionPrompts[t.SessionID]; ok {
+					t.UserPrompt = p
+				}
+			}
+			if t.UserPrompt != "" && (t.Name == "" || t.Name == "Claude Code Turn" || strings.HasPrefix(t.Name, "claude_code.")) {
+				t.Name = t.UserPrompt
+			}
 			if err := store.SaveTrace(t); err == nil {
 				loaded++
 			}

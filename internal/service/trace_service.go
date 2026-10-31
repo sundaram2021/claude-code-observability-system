@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/claude-code/observability/internal/domain"
@@ -9,8 +10,9 @@ import (
 
 // TraceService orchestrates trace and span storage, hierarchy, and notifications.
 type TraceService struct {
-	repo repository.TraceRepository
-	bus  *EventBus
+	repo            repository.TraceRepository
+	bus             *EventBus
+	persistencePath string
 }
 
 // NewTraceService creates an instance of TraceService.
@@ -19,6 +21,11 @@ func NewTraceService(repo repository.TraceRepository, bus *EventBus) *TraceServi
 		repo: repo,
 		bus:  bus,
 	}
+}
+
+// SetPersistencePath sets the destination file for automatic trace persistence.
+func (s *TraceService) SetPersistencePath(p string) {
+	s.persistencePath = p
 }
 
 // IngestTrace enriches, builds tree, computes totals, stores, and broadcasts a trace.
@@ -52,20 +59,29 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 		if existing.SessionID == "" && t.SessionID != "" {
 			existing.SessionID = t.SessionID
 		}
-		if (existing.Name == "" || existing.Name == "Claude Code Turn") && t.Name != "" && t.Name != "Claude Code Turn" {
+		if existing.UserPrompt == "" && t.UserPrompt != "" {
+			existing.UserPrompt = t.UserPrompt
+		}
+		if t.UserPrompt == "" && existing.UserPrompt != "" {
+			t.UserPrompt = existing.UserPrompt
+		}
+		if (existing.Name == "" || existing.Name == "Claude Code Turn" || strings.HasPrefix(existing.Name, "claude_code.")) && t.Name != "" && !strings.HasPrefix(t.Name, "claude_code.") {
 			existing.Name = t.Name
 		}
 		t = existing
 	}
 
-	s.enrichSpans(t)
-	s.calculateTotals(t)
+	enrichTracePrompt(t, s.repo)
+	enrichSpans(t)
+	calculateTotals(t)
 	t.RootSpan = BuildSpanTree(t.Spans)
 
 	if err := s.repo.SaveTrace(t); err != nil {
 		return err
 	}
-	_ = repository.SaveToFile(s.repo, "")
+	if s.persistencePath != "" {
+		_ = repository.SaveToFile(s.repo, s.persistencePath)
+	}
 
 	if s.bus != nil {
 		s.bus.Publish(RealtimeEvent{
@@ -92,102 +108,3 @@ func (s *TraceService) GetTrace(id string) (*domain.Trace, error) {
 func (s *TraceService) ListTraces(filter domain.TraceFilter) ([]*domain.Trace, int, error) {
 	return s.repo.ListTraces(filter)
 }
-
-// enrichSpans computes costs and durations for individual spans.
-func (s *TraceService) enrichSpans(t *domain.Trace) {
-	for _, span := range t.Spans {
-		span.CalculateDuration()
-		if span.Tokens.TotalTokens == 0 {
-			span.Tokens.TotalTokens = span.Tokens.InputTokens + span.Tokens.OutputTokens +
-				span.Tokens.CacheReadInputTokens + span.Tokens.CacheCreationInputTokens
-		}
-		if span.CostUSD == 0 && span.Model != "" {
-			cost, _ := domain.CalculateCost(span.Model, span.Tokens)
-			span.CostUSD = cost
-		}
-		if span.Status == "" {
-			span.Status = domain.StatusSuccess
-		}
-	}
-}
-
-// calculateTotals aggregates tokens, costs, performance, and overall status for the trace.
-func (s *TraceService) calculateTotals(t *domain.Trace) {
-	var totalCost float64
-	var usage domain.TokenUsage
-	var toolDur, genDur, sumTTFT, sumVel float64
-	var toolCount, genCount int
-	hasError, hadError, selfCorrected := false, false, false
-	primaryModel := ""
-
-	for _, span := range t.Spans {
-		totalCost += span.CostUSD
-		usage.InputTokens += span.Tokens.InputTokens
-		usage.OutputTokens += span.Tokens.OutputTokens
-		usage.CacheReadInputTokens += span.Tokens.CacheReadInputTokens
-		usage.CacheCreationInputTokens += span.Tokens.CacheCreationInputTokens
-		usage.CacheCreation5mTokens += span.Tokens.CacheCreation5mTokens
-		usage.CacheCreation1hTokens += span.Tokens.CacheCreation1hTokens
-		usage.TotalTokens += span.Tokens.TotalTokens
-
-		if span.Model != "" && primaryModel == "" {
-			primaryModel = span.Model
-		}
-
-		if span.Kind == domain.SpanKindTool {
-			toolCount++
-			toolDur += span.DurationMs
-		} else if span.Kind == domain.SpanKindGeneration {
-			genCount++
-			genDur += span.DurationMs
-			if span.TTFTMs > 0 {
-				sumTTFT += span.TTFTMs
-			}
-			if span.TokensPerSec > 0 {
-				sumVel += span.TokensPerSec
-			}
-		}
-
-		if span.Status == domain.StatusError {
-			hasError = true
-			hadError = true
-		} else if hadError && span.Status == domain.StatusSuccess {
-			selfCorrected = true
-		}
-	}
-
-	usage.ContextTokens = usage.InputTokens + usage.CacheReadInputTokens + usage.CacheCreationInputTokens
-	usage.ContextWindowLimit = 200000
-	if usage.ContextTokens > 0 {
-		usage.ContextSaturationPct = (float64(usage.ContextTokens) / 200000.0) * 100.0
-	}
-
-	t.TotalCost = totalCost
-	t.TotalTokens = usage
-	t.ToolCount = toolCount
-	t.ToolDurationMs = toolDur
-	t.GenerationDurationMs = genDur
-	t.SelfCorrected = selfCorrected
-	t.ContextSaturationPct = usage.ContextSaturationPct
-
-	if genCount > 0 {
-		t.AvgTTFTMs = sumTTFT / float64(genCount)
-		t.TokensPerSec = sumVel / float64(genCount)
-	}
-
-	if primaryModel != "" {
-		_, savings := domain.CalculateCost(primaryModel, usage)
-		t.CacheSavingsUSD = savings
-		uncached := totalCost + savings
-		if totalCost > 0 && uncached > 0 {
-			t.CacheMultiplier = uncached / totalCost
-		}
-	}
-
-	if hasError {
-		t.Status = domain.StatusError
-	} else if t.Status == "" {
-		t.Status = domain.StatusSuccess
-	}
-}
-

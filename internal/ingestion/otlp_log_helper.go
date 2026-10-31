@@ -2,6 +2,7 @@ package ingestion
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/claude-code/observability/internal/domain"
 )
@@ -54,3 +55,27 @@ func enrichContextTokens(u *domain.TokenUsage, attrs map[string]string) {
 	}
 }
 
+// extractPromptFromAttrs extracts user prompt from known metadata keys.
+func extractPromptFromAttrs(attrs map[string]string) string {
+	if attrs == nil {
+		return ""
+	}
+	for _, key := range []string{"user_prompt", "prompt", "gen_ai.prompt", "query"} {
+		if val := attrs[key]; val != "" {
+			return val
+		}
+	}
+	return ""
+}
+
+// parseNanoTime converts unix nanosecond string into time.Time.
+func parseNanoTime(nanoStr string) time.Time {
+	if nanoStr == "" {
+		return time.Now()
+	}
+	nano, err := strconv.ParseInt(nanoStr, 10, 64)
+	if err != nil {
+		return time.Now()
+	}
+	return time.Unix(0, nano)
+}

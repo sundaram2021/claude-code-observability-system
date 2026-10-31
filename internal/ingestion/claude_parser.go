@@ -29,11 +29,12 @@ func ParseClaudeEvent(e *ClaudeEventPayload) *domain.Trace {
 	}
 
 	trace := &domain.Trace{
-		ID:        traceID,
-		SessionID: e.SessionID,
-		Project:   e.Project,
-		Name:      formatTurnName(e),
-		Status:    status,
+		ID:         traceID,
+		SessionID:  e.SessionID,
+		Project:    e.Project,
+		Name:       formatTurnName(e),
+		UserPrompt: e.Prompt,
+		Status:     status,
 		StartTime: now.Add(-time.Duration(e.Duration * float64(time.Millisecond))),
 		EndTime:   now,
 		Spans:     make([]*domain.Span, 0, 4),

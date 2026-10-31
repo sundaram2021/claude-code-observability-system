@@ -109,6 +109,7 @@ func TestParseOTLPTraces_ClaudeCodeFormat(t *testing.T) {
 								Attributes: []ingestion.OTLPAttribute{
 									{Key: "tool_name", Value: ingestion.OTLPValue{StringValue: "Bash"}},
 									{Key: "full_command", Value: ingestion.OTLPValue{StringValue: "git status"}},
+									{Key: "user_prompt", Value: ingestion.OTLPValue{StringValue: "run git status"}},
 									{Key: "session.id", Value: ingestion.OTLPValue{StringValue: "sess_claude_1"}},
 								},
 								Events: []ingestion.OTLPEvent{
@@ -147,6 +148,9 @@ func TestParseOTLPTraces_ClaudeCodeFormat(t *testing.T) {
 		t.Fatalf("expected 1 trace, got %d", len(traces))
 	}
 	trc := traces[0]
+	if trc.UserPrompt != "run git status" {
+		t.Errorf("expected UserPrompt 'run git status', got '%s'", trc.UserPrompt)
+	}
 	if len(trc.Spans) != 2 {
 		t.Fatalf("expected 2 spans, got %d", len(trc.Spans))
 	}
