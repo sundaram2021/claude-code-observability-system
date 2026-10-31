@@ -89,3 +89,4 @@ func LoadFromFile(store TraceRepository, filePath string) (int, error) {
 	}
 	return loaded, nil
 }
+

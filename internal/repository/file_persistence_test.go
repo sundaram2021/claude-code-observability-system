@@ -81,3 +81,4 @@ func TestFilePersistence_EdgeCases(t *testing.T) {
 		t.Errorf("expected non-empty default trace file path")
 	}
 }
+
