@@ -47,23 +47,23 @@
         <div class="metric-sub success-accent" id="m-savings">Saved $0.00 cache</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Tokens (In / Out)</div>
-        <div class="metric-val" id="m-tokens">0 / 0</div>
+        <div class="metric-label">Prompt Cache ROI</div>
+        <div class="metric-val" id="m-roi" style="color:var(--success)">0.0x</div>
         <div class="metric-sub" id="m-cache-hit">0% Cache Hit</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Latency (Avg / P95)</div>
-        <div class="metric-val" id="m-latency">0ms / 0ms</div>
-        <div class="metric-sub">Response time</div>
+        <div class="metric-label">Velocity & TTFT</div>
+        <div class="metric-val" id="m-speed">0 tok/s</div>
+        <div class="metric-sub" id="m-ttft">0ms TTFT</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Tool Calls</div>
-        <div class="metric-val" id="m-tools">0</div>
-        <div class="metric-sub" id="m-tool-types">0 distinct tools</div>
+        <div class="metric-label">Context Saturation (200k)</div>
+        <div class="metric-val" id="m-context">0.0%</div>
+        <div class="metric-sub" id="m-context-toks">0 / 200k tokens</div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Errors</div>
-        <div class="metric-val" id="m-errors">0</div>
+        <div class="metric-label">Agent Resilience</div>
+        <div class="metric-val" id="m-resilience" style="color:#58a6ff">100%</div>
         <div class="metric-sub" id="m-error-rate">0.0% failure rate</div>
       </div>
     </section>
@@ -77,6 +77,12 @@
           <option value="SUCCESS">Success Only</option>
           <option value="ERROR">Errors Only</option>
         </select>
+        <div class="filter-pills" id="filter-pills">
+          <button class="pill active" data-filter="all">All</button>
+          <button class="pill" data-filter="tool">With Tools</button>
+          <button class="pill" data-filter="cache">High Cache (&gt;80%)</button>
+          <button class="pill" data-filter="slow">Slow (&gt;3s)</button>
+        </div>
         <button id="btn-export" class="btn btn-secondary">Export JSON</button>
       </div>
       <div class="waterfall-container" id="traces-list"><div class="empty-state">Loading traces...</div></div>

@@ -134,3 +134,42 @@
   font-family: var(--font-mono);
 }
 
+.filter-pills { display: flex; gap: 6px; align-items: center; }
+.pill {
+  padding: 3px 10px; border-radius: 12px; font-size: 11px; border: 1px solid var(--border-color);
+  background: var(--bg-secondary); color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+}
+.pill:hover, .pill.active { background: #238636; color: #fff; border-color: #2ea043; }
+
+.trace-sub-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 16px; background: rgba(0, 0, 0, 0.25); border-bottom: 1px solid var(--border-color);
+  font-size: 11px; gap: 12px;
+}
+
+.token-bar-container {
+  display: flex; height: 7px; width: 140px; border-radius: 4px; overflow: hidden; background: #21262d;
+}
+.seg-read { background: #2ea043; }
+.seg-create { background: #d29922; }
+.seg-input { background: #58a6ff; }
+.seg-output { background: #bc8cff; }
+
+.context-gauge {
+  display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted);
+}
+.gauge-bar { width: 70px; height: 6px; background: #21262d; border-radius: 3px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 3px; background: #2ea043; }
+.gauge-fill.warning { background: #d29922; }
+.gauge-fill.danger { background: #f85149; }
+
+.step-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.step-node {
+  font-size: 11px; font-family: var(--font-mono); padding: 2px 6px; border-radius: 4px;
+  background: #161b22; border: 1px solid var(--border-color); color: var(--text-main);
+}
+.step-node.tool { border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; }
+.step-node.error { border-color: rgba(248, 81, 73, 0.4); color: #f85149; }
+.step-arrow { color: var(--text-dim); font-size: 10px; }
+
+

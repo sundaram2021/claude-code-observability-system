@@ -10,21 +10,23 @@ const MetricsView = {
     document.getElementById('m-cost').textContent = formatUSD(metrics.totalCostUsd);
     document.getElementById('m-savings').textContent = `Saved ${formatUSD(metrics.totalCacheSavingsUsd)} cache`;
 
-    const inp = metrics.tokens?.inputTokens || 0;
-    const out = metrics.tokens?.outputTokens || 0;
-    document.getElementById('m-tokens').textContent = `${formatTokens(inp)} / ${formatTokens(out)}`;
+    const roiMult = metrics.cacheMultiplier > 0 ? `${metrics.cacheMultiplier.toFixed(1)}x ROI` : '1.0x ROI';
+    document.getElementById('m-roi').textContent = roiMult;
     document.getElementById('m-cache-hit').textContent = `${(metrics.cacheHitRate || 0).toFixed(1)}% Cache Hit`;
 
-    const avgLat = formatDuration(metrics.avgLatencyMs);
-    const p95Lat = formatDuration(metrics.p95LatencyMs);
-    document.getElementById('m-latency').textContent = `${avgLat} / ${p95Lat}`;
+    const speed = metrics.avgTokensPerSec > 0 ? `${metrics.avgTokensPerSec.toFixed(1)} tok/s` : `${formatDuration(metrics.avgLatencyMs)}`;
+    const ttftText = metrics.avgTtftMs > 0 ? `${metrics.avgTtftMs.toFixed(0)}ms TTFT` : `P95: ${formatDuration(metrics.p95LatencyMs)}`;
+    document.getElementById('m-speed').textContent = speed;
+    document.getElementById('m-ttft').textContent = ttftText;
 
-    const totalToolCalls = (metrics.tools || []).reduce((acc, t) => acc + t.callCount, 0);
-    document.getElementById('m-tools').textContent = totalToolCalls.toLocaleString();
-    document.getElementById('m-tool-types').textContent = `${(metrics.tools || []).length} distinct tools`;
+    const ctxSat = (metrics.avgContextSaturation || 0).toFixed(1);
+    document.getElementById('m-context').textContent = `${ctxSat}%`;
+    const ctxToks = metrics.tokens?.contextTokens || (metrics.tokens?.inputTokens || 0) + (metrics.tokens?.cacheReadInputTokens || 0);
+    document.getElementById('m-context-toks').textContent = `${formatTokens(ctxToks)} / 200k tokens`;
 
-    document.getElementById('m-errors').textContent = (metrics.errorCount || 0).toLocaleString();
-    document.getElementById('m-error-rate').textContent = `${(metrics.errorRate || 0).toFixed(1)}% failure rate`;
+    const healRate = metrics.errorCount > 0 ? `${(metrics.selfCorrectionRate || 0).toFixed(0)}% healed` : '100% resilient';
+    document.getElementById('m-resilience').textContent = healRate;
+    document.getElementById('m-error-rate').textContent = `${(metrics.errorRate || 0).toFixed(1)}% failure rate (${metrics.errorCount || 0} errs)`;
 
     this.renderToolStats(metrics.tools);
     this.renderModelStats(metrics.models);

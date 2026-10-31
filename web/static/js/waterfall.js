@@ -24,6 +24,11 @@ const WaterfallView = {
       .map((s) => `<span class="badge" style="background:rgba(210,153,34,0.15);color:#d29922">★ ${escapeHtml(s.name)}: ${s.value}</span>`)
       .join(' ');
 
+    const multHtml = trace.cacheMultiplier > 0 ? `<span class="badge" style="background:#1b4721;color:#3fb950">${trace.cacheMultiplier.toFixed(1)}x ROI</span>` : '';
+    const speedHtml = trace.tokensPerSec > 0 ? `<span class="badge" style="background:#21262d;color:#58a6ff">⚡ ${trace.tokensPerSec.toFixed(0)} tok/s</span>` : '';
+    const ttftHtml = trace.avgTtftMs > 0 ? `<span class="badge" style="background:#21262d;color:#8b949e">⏱️ ${trace.avgTtftMs.toFixed(0)}ms TTFT</span>` : '';
+    const healedHtml = trace.selfCorrected ? `<span class="badge" style="background:rgba(56,189,248,0.15);color:#38bdf8">✨ Healed</span>` : '';
+
     return `
       <div class="trace-card" data-trace-id="${trace.id}">
         <div class="trace-header">
@@ -33,6 +38,10 @@ const WaterfallView = {
             ${trace.project ? `<span class="badge" style="background:#21262d;color:#8b949e">${escapeHtml(trace.project)}</span>` : ''}
             ${tagsHtml}
             ${scoresHtml}
+            ${multHtml}
+            ${speedHtml}
+            ${ttftHtml}
+            ${healedHtml}
           </div>
           <div class="trace-meta">
             <span>${formatDuration(trace.durationMs)}</span>
@@ -43,11 +52,61 @@ const WaterfallView = {
             <span>${timeAgo(trace.startTime)}</span>
           </div>
         </div>
+        <div class="trace-sub-bar">
+          <div style="display:flex;align-items:center;gap:14px">
+            ${this.renderTokenBar(trace.totalTokens)}
+            ${this.renderContextGauge(trace.contextSaturationPct || 0)}
+          </div>
+          <div class="step-flow">
+            ${this.renderStepFlow(spans)}
+          </div>
+        </div>
         <div class="trace-body">
           ${spans.map((s) => this.renderSpanRow(s, trace, maxDur)).join('')}
         </div>
       </div>
     `;
+  },
+
+  renderTokenBar(u) {
+    if (!u || !u.totalTokens) return '';
+    const tot = Math.max(u.totalTokens, 1);
+    const readPct = ((u.cacheReadInputTokens || 0) / tot) * 100;
+    const createPct = ((u.cacheCreationInputTokens || 0) / tot) * 100;
+    const inpPct = ((u.inputTokens || 0) / tot) * 100;
+    const outPct = ((u.outputTokens || 0) / tot) * 100;
+    return `
+      <div style="display:flex;align-items:center;gap:6px" title="Cache Read: ${u.cacheReadInputTokens || 0}, Create: ${u.cacheCreationInputTokens || 0}, In: ${u.inputTokens || 0}, Out: ${u.outputTokens || 0}">
+        <span style="color:var(--text-muted)">Tokens:</span>
+        <div class="token-bar-container">
+          <div class="seg-read" style="width:${readPct}%"></div>
+          <div class="seg-create" style="width:${createPct}%"></div>
+          <div class="seg-input" style="width:${inpPct}%"></div>
+          <div class="seg-output" style="width:${outPct}%"></div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderContextGauge(pct) {
+    const cls = pct > 75 ? 'danger' : pct > 50 ? 'warning' : '';
+    return `
+      <div class="context-gauge" title="Context Saturation against 200k limit">
+        <span>Context: ${pct.toFixed(1)}%</span>
+        <div class="gauge-bar"><div class="gauge-fill ${cls}" style="width:${Math.min(pct, 100)}%"></div></div>
+      </div>
+    `;
+  },
+
+  renderStepFlow(spans) {
+    if (!spans || spans.length === 0) return '';
+    const nodes = spans.slice(0, 6).map((s) => {
+      const isTool = s.kind === 'TOOL' || s.tool;
+      const cls = s.status === 'ERROR' ? 'error' : isTool ? 'tool' : '';
+      const name = isTool && s.tool?.name ? s.tool.name : s.name.replace('Event: ', '');
+      return `<span class="step-node ${cls}">${escapeHtml(name.slice(0, 15))}</span>`;
+    });
+    return nodes.join('<span class="step-arrow">➔</span>');
   },
 
   renderSpanRow(s, trace, maxDur) {
@@ -108,40 +167,31 @@ const WaterfallView = {
 
   openSpanModal(traceId, spanId) {
     const trace = State.traces.find((t) => t.id === traceId);
-    if (!trace) return;
-    const span = (trace.spans || []).find((s) => s.id === spanId);
+    const span = trace ? (trace.spans || []).find((s) => s.id === spanId) : null;
     if (!span) return;
 
     document.getElementById('modal-title').textContent = span.name;
-    const body = document.getElementById('modal-body');
+    const toolHtml = span.tool ? `
+      <div style="margin-bottom:12px">
+        <h4>Tool Execution (${escapeHtml(span.tool.name)})</h4>
+        <pre class="code-block"><code>${escapeHtml(span.tool.input || '(empty)')}\n➔ ${escapeHtml(span.tool.output || '(no output)')}</code></pre>
+      </div>` : '';
 
-    let toolHtml = '';
-    if (span.tool) {
-      toolHtml = `
-        <div style="margin-bottom:14px">
-          <h4>Tool Execution (${escapeHtml(span.tool.name)})</h4>
-          <p style="margin:4px 0 2px 0;color:var(--text-muted)">Input:</p>
-          <pre class="code-block"><code>${escapeHtml(span.tool.input || '(empty)')}</code></pre>
-          <p style="margin:4px 0 2px 0;color:var(--text-muted)">Output:</p>
-          <pre class="code-block"><code>${escapeHtml(span.tool.output || '(no output)')}</code></pre>
-        </div>
-      `;
-    }
-
-    body.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    const perfInfo = span.ttftMs ? `<div><strong>TTFT / Speed:</strong> ${span.ttftMs.toFixed(0)}ms (${(span.tokensPerSec || 0).toFixed(0)} tok/s)</div>` : '';
+    document.getElementById('modal-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div><strong>Kind:</strong> ${span.kind}</div>
         <div><strong>Status:</strong> <span class="badge ${span.status === 'ERROR' ? 'badge-error' : 'badge-success'}">${span.status}</span></div>
         <div><strong>Duration:</strong> ${formatDuration(span.durationMs)}</div>
         <div><strong>Cost:</strong> ${formatUSD(span.costUsd)}</div>
         <div><strong>Model:</strong> ${span.model || 'N/A'}</div>
         <div><strong>Tokens:</strong> In: ${span.tokens?.inputTokens || 0}, Out: ${span.tokens?.outputTokens || 0}, Cache: ${span.tokens?.cacheReadInputTokens || 0}</div>
+        ${perfInfo}
       </div>
       ${toolHtml}
       <h4>Raw Span Payload</h4>
       <pre class="code-block"><code>${escapeHtml(JSON.stringify(span, null, 2))}</code></pre>
     `;
-
     document.getElementById('span-modal').classList.remove('hidden');
   },
 };

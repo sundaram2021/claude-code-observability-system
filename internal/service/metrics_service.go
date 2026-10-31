@@ -35,17 +35,45 @@ func (s *MetricsService) GetMetrics() (*domain.SystemMetrics, error) {
 	toolMap := make(map[string]*domain.ToolUsageStat)
 	modelMap := make(map[string]*domain.ModelUsageStat)
 	durations := make([]float64, 0, len(traces))
-	var totalLatency float64
+	var totalLatency, sumTTFT, sumVel, totalSavings float64
+	var countTTFT, countVel, errTraces, selfCorrectedCount int
 
 	for _, t := range traces {
 		durations = append(durations, t.DurationMs)
 		totalLatency += t.DurationMs
+		totalSavings += t.CacheSavingsUSD
+
+		if t.AvgTTFTMs > 0 {
+			sumTTFT += t.AvgTTFTMs
+			countTTFT++
+		}
+		if t.TokensPerSec > 0 {
+			sumVel += t.TokensPerSec
+			countVel++
+		}
+		if t.Status == domain.StatusError || t.SelfCorrected {
+			errTraces++
+			if t.SelfCorrected {
+				selfCorrectedCount++
+			}
+		}
 
 		for _, span := range t.Spans {
 			metrics.AddSpan(span)
 			s.aggregateTool(span, toolMap)
 			s.aggregateModel(span, modelMap)
 		}
+	}
+
+	metrics.TotalCacheSavingsUSD = totalSavings
+	if countTTFT > 0 {
+		metrics.AvgTTFTMs = sumTTFT / float64(countTTFT)
+	}
+	if countVel > 0 {
+		metrics.AvgTokensPerSec = sumVel / float64(countVel)
+	}
+	if errTraces > 0 {
+		metrics.SelfCorrectionRate = (float64(selfCorrectedCount) / float64(errTraces)) * 100.0
 	}
 
 	s.finalizeDurations(metrics, durations, totalLatency)

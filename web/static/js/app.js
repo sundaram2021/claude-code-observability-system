@@ -74,6 +74,29 @@ const App = {
 
     searchInput.addEventListener('input', triggerSearch);
     statusSelect.addEventListener('change', triggerSearch);
+
+    document.querySelectorAll('.filter-pills .pill').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pills .pill').forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        this.filterTracesByPill(pill.getAttribute('data-filter'));
+      });
+    });
+  },
+
+  filterTracesByPill(filter) {
+    let list = State.traces || [];
+    if (filter === 'tool') {
+      list = list.filter((t) => (t.spans || []).some((s) => s.kind === 'TOOL' || s.tool));
+    } else if (filter === 'cache') {
+      list = list.filter((t) => {
+        const u = t.totalTokens;
+        return u && (u.cacheReadInputTokens / Math.max(u.inputTokens + u.cacheReadInputTokens, 1)) >= 0.8;
+      });
+    } else if (filter === 'slow') {
+      list = list.filter((t) => t.durationMs >= 3000);
+    }
+    WaterfallView.render(list);
   },
 
   setupModals() {

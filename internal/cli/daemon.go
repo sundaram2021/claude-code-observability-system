@@ -103,12 +103,17 @@ func PrintStatus(port int) error {
 	fmt.Printf(" Claude Code Observability Status (http://localhost:%d)\n", port)
 	fmt.Printf("========================================================\n")
 	fmt.Printf(" Status:       RUNNING\n")
-	fmt.Printf(" Total Traces: %d\n", m.TotalTraces)
-	fmt.Printf(" Total Spans:  %d\n", m.TotalSpans)
+	fmt.Printf(" Total Traces: %d (Spans: %d)\n", m.TotalTraces, m.TotalSpans)
 	fmt.Printf(" Total Cost:   $%.4f (Saved $%.4f via prompt cache)\n", m.TotalCostUSD, m.TotalCacheSavingsUSD)
-	fmt.Printf(" Cache Hit %%:  %.1f%%\n", m.CacheHitRate)
+	if m.CacheMultiplier > 0 {
+		fmt.Printf(" Cache ROI:    %.1fx dollar multiplier (Hit Rate: %.1f%%)\n", m.CacheMultiplier, m.CacheHitRate)
+	} else {
+		fmt.Printf(" Cache Hit %%:  %.1f%%\n", m.CacheHitRate)
+	}
+	fmt.Printf(" TTFT & Speed: %.0fms TTFT (%.1f tok/s)\n", m.AvgTTFTMs, m.AvgTokensPerSec)
+	fmt.Printf(" Context Sat:  %.1f%% of 200k limit\n", m.AvgContextSaturation)
 	fmt.Printf(" Avg Latency:  %.0fms (P95: %.0fms)\n", m.AvgLatencyMs, m.P95LatencyMs)
-	fmt.Printf(" Error Rate:   %.1f%%\n", m.ErrorRate)
+	fmt.Printf(" Resilience:   %.1f%% self-correction (Error Rate: %.1f%%)\n", m.SelfCorrectionRate, m.ErrorRate)
 	fmt.Printf("========================================================\n")
 	return nil
 }

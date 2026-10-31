@@ -143,37 +143,42 @@ func convertLogRecordToSpan(rec OTLPLogRecord, resAttrs map[string]string) *doma
 	}
 
 	tokens := extractOTLPUsage(attrs)
+	enrichContextTokens(&tokens, attrs)
+
 	var costUSD float64
 	if costStr := attrs["cost_usd"]; costStr != "" {
 		costUSD, _ = strconv.ParseFloat(costStr, 64)
 	}
 
+	ttftMs, _ := strconv.ParseFloat(attrs["ttft_ms"], 64)
+	var tokensPerSec float64
+	if kind == domain.SpanKindGeneration {
+		tokensPerSec = computeGenVelocity(durMs, ttftMs, tokens.OutputTokens)
+	}
+
 	var tool *domain.ToolCall
 	if kind == domain.SpanKindTool {
-		toolName := attrs["tool_name"]
-		if toolName == "" {
-			toolName = attrs["tool"]
-		}
-		tool = &domain.ToolCall{
-			Name:   toolName,
-			Input:  attrs["tool_input"],
-			Output: attrs["tool_result"],
-		}
+		tool = buildToolCall(attrs)
 	}
 
 	return &domain.Span{
-		ID:        spanID,
-		TraceID:   traceID,
-		SessionID: sessID,
-		Name:      spanName,
-		Kind:      kind,
-		Status:    domain.StatusSuccess,
-		Model:     model,
-		StartTime: startTime,
-		EndTime:   endTime,
-		Tokens:    tokens,
-		CostUSD:   costUSD,
-		Tool:      tool,
-		Metadata:  attrs,
+		ID:           spanID,
+		TraceID:      traceID,
+		SessionID:    sessID,
+		Name:         spanName,
+		Kind:         kind,
+		Status:       domain.StatusSuccess,
+		Model:        model,
+		StartTime:    startTime,
+		EndTime:      endTime,
+		DurationMs:   float64(durMs),
+		TTFTMs:       ttftMs,
+		TokensPerSec: tokensPerSec,
+		Effort:       attrs["effort"],
+		Speed:        attrs["speed"],
+		Tokens:       tokens,
+		CostUSD:      costUSD,
+		Tool:         tool,
+		Metadata:     attrs,
 	}
 }
