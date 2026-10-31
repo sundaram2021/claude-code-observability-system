@@ -36,36 +36,12 @@
 
   <main class="app-main">
     <section class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Total Traces</div>
-        <div class="metric-val" id="m-traces">0</div>
-        <div class="metric-sub" id="m-spans">0 spans</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Total Cost</div>
-        <div class="metric-val cost-accent" id="m-cost">$0.00</div>
-        <div class="metric-sub success-accent" id="m-savings">Saved $0.00 cache</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Prompt Cache ROI</div>
-        <div class="metric-val" id="m-roi" style="color:var(--success)">0.0x</div>
-        <div class="metric-sub" id="m-cache-hit">0% Cache Hit</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Velocity & TTFT</div>
-        <div class="metric-val" id="m-speed">0 tok/s</div>
-        <div class="metric-sub" id="m-ttft">0ms TTFT</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Context Saturation (200k)</div>
-        <div class="metric-val" id="m-context">0.0%</div>
-        <div class="metric-sub" id="m-context-toks">0 / 200k tokens</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Agent Resilience</div>
-        <div class="metric-val" id="m-resilience" style="color:#58a6ff">100%</div>
-        <div class="metric-sub" id="m-error-rate">0.0% failure rate</div>
-      </div>
+      <div class="metric-card"><div class="metric-label">Total Traces</div><div class="metric-val" id="m-traces">0</div><div class="metric-sub" id="m-spans">0 spans</div></div>
+      <div class="metric-card"><div class="metric-label">Total Cost</div><div class="metric-val cost-accent" id="m-cost">$0.00</div><div class="metric-sub success-accent" id="m-savings">Saved $0.00 cache</div></div>
+      <div class="metric-card"><div class="metric-label">Prompt Cache ROI</div><div class="metric-val" id="m-roi" style="color:var(--success)">0.0x</div><div class="metric-sub" id="m-cache-hit">0% Cache Hit</div></div>
+      <div class="metric-card"><div class="metric-label">Velocity &amp; TTFT</div><div class="metric-val" id="m-speed">0 tok/s</div><div class="metric-sub" id="m-ttft">0ms TTFT</div></div>
+      <div class="metric-card"><div class="metric-label">Context Saturation (200k)</div><div class="metric-val" id="m-context">0.0%</div><div class="metric-sub" id="m-context-toks">0 / 200k tokens</div></div>
+      <div class="metric-card"><div class="metric-label">Agent Resilience</div><div class="metric-val" id="m-resilience" style="color:#58a6ff">100%</div><div class="metric-sub" id="m-error-rate">0.0% failure rate</div></div>
     </section>
 
     <!-- Tab 1: Traces Waterfall -->
@@ -123,16 +99,19 @@
     <!-- Tab 4: Guide -->
     <div id="tab-guide" class="tab-pane">
       <div class="guide-container">
-        <h2>Claude Code Native Integration</h2>
-        <p>Type <code>/observe</code> directly inside Claude Code to spin up the dashboard and stream telemetry!</p>
-        <div class="code-block"><pre><code># Inside Claude Code CLI:
-/observe        # Spins up dashboard and exports OTel environment
-/observe status # Shows real-time tokens, costs, and cache hit rate
-/observe open   # Opens dashboard in your default browser</code></pre></div>
-        <h3>Manual Environment Configuration</h3>
-        <div class="code-block"><pre><code>export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:3456/v1/traces"
-export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
-claude "Refactor the auth handler and run tests"</code></pre></div>
+        <h2>Claude Code Plugin Installation</h2>
+        <p>Install directly inside Claude Code with zero manual configuration:</p>
+        <div class="code-block"><pre><code># 1. Add marketplace repository (one-time)
+/plugin marketplace add sundaram2021/claude-code-observability-system
+
+# 2. Install agent-observability plugin
+/plugin install agent-observability</code></pre></div>
+        <h3>Slash Commands &amp; Inspection</h3>
+        <div class="code-block"><pre><code>/observe        # Checks observability daemon status &amp; telemetry summary
+/observe status # Shows real-time token usage, costs, and cache hit rate
+/observe open   # Opens dashboard at http://localhost:3456</code></pre></div>
+        <h3>Automated Zero-Config Lifecycle</h3>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Auto-starts on Claude Code launch on <code>http://localhost:3456</code>, streams every user prompt, tool call, token cost, and prompt cache hit live, and gracefully saves traces to disk on exit.</p>
       </div>
     </div>
   </main>

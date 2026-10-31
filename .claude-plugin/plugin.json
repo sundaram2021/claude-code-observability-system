@@ -1,7 +1,7 @@
 {
   "name": "agent-observability",
   "description": "Real-time local observability dashboard and waterfall traces for Claude Code. Monitors tokens, latency, prompt cache ROI, context saturation, and tool execution.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Sundaram Kumar Jha",
     "email": "jhasundarm@gmail.com"
