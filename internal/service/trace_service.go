@@ -65,6 +65,7 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 	if err := s.repo.SaveTrace(t); err != nil {
 		return err
 	}
+	_ = repository.SaveToFile(s.repo, "")
 
 	if s.bus != nil {
 		s.bus.Publish(RealtimeEvent{

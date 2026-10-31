@@ -7,6 +7,21 @@ const { spawn } = require('child_process');
 const PORT = 3456;
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
 
+const TELEMETRY_VARS = {
+  CLAUDE_CODE_ENABLE_TELEMETRY: '1',
+  CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: '1',
+  OTEL_TRACES_EXPORTER: 'otlp',
+  OTEL_METRICS_EXPORTER: 'otlp',
+  OTEL_LOGS_EXPORTER: 'otlp',
+  OTEL_EXPORTER_OTLP_PROTOCOL: 'http/json',
+  OTEL_EXPORTER_OTLP_ENDPOINT: `http://localhost:${PORT}`,
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: `http://localhost:${PORT}/v1/traces`,
+  OTEL_LOG_USER_PROMPTS: '1',
+  OTEL_LOG_TOOL_DETAILS: '1',
+  OTEL_LOG_TOOL_CONTENT: '1',
+  OTEL_LOG_ASSISTANT_RESPONSES: '1'
+};
+
 function resolveBinary() {
   const isWin = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
@@ -49,17 +64,18 @@ function ensureSettings() {
       settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
     }
     settings.env = settings.env || {};
-    settings.env.CLAUDE_CODE_ENABLE_TELEMETRY = '1';
-    settings.env.OTEL_METRICS_EXPORTER = 'otlp';
-    settings.env.OTEL_LOGS_EXPORTER = 'otlp';
-    settings.env.OTEL_TRACES_EXPORTER = 'otlp';
-    settings.env.OTEL_EXPORTER_OTLP_PROTOCOL = 'http/json';
-    settings.env.OTEL_EXPORTER_OTLP_ENDPOINT = `http://localhost:${PORT}`;
-    settings.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = `http://localhost:${PORT}/v1/traces`;
+    Object.assign(settings.env, TELEMETRY_VARS);
 
     const dir = path.dirname(settingsPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+
+    if (process.env.CLAUDE_ENV_FILE && fs.existsSync(process.env.CLAUDE_ENV_FILE)) {
+      const lines = Object.entries(TELEMETRY_VARS)
+        .map(([k, v]) => `export ${k}=${v}`)
+        .join('\n') + '\n';
+      fs.appendFileSync(process.env.CLAUDE_ENV_FILE, lines, 'utf8');
+    }
   } catch (err) {
     // Non-fatal if permission error
   }
@@ -83,26 +99,23 @@ function handleStart() {
       try { fs.chmodSync(bin, 0o755); } catch (_) {}
     }
 
-    const child = spawn(bin, [], {
-      detached: true,
+    const child = spawn(bin, ['start'], {
       stdio: 'ignore',
       env: Object.assign({}, process.env, { PORT: String(PORT) })
     });
-    child.unref();
 
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
+    child.on('exit', () => {
       checkPort(PORT, (ok) => {
-        if (ok || attempts >= 20) {
-          clearInterval(interval);
-          if (ok) {
-            console.log(`🚀 Observability started: http://localhost:${PORT}`);
-          }
-          process.exit(0);
+        if (ok) {
+          console.log(`🚀 Observability started: http://localhost:${PORT}`);
         }
+        process.exit(0);
       });
-    }, 50);
+    });
+
+    child.on('error', () => {
+      process.exit(0);
+    });
   });
 }
 
@@ -112,9 +125,9 @@ function handleStop() {
     port: PORT,
     path: '/api/v1/shutdown',
     method: 'POST',
-    timeout: 800
+    timeout: 1000
   }, () => {
-    console.log(`✓ Observability daemon stopped.`);
+    console.log(`✓ Observability daemon stopping.`);
     process.exit(0);
   });
   req.on('error', () => process.exit(0));
@@ -125,4 +138,3 @@ function handleStop() {
 const action = process.argv[2] || 'start';
 if (action === 'stop') handleStop();
 else handleStart();
-

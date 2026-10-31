@@ -82,7 +82,7 @@ func NewRouter(cfg RouterConfig) http.Handler {
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"success":true,"message":"server shutting down"}`))
 			go func() {
-				time.Sleep(50 * time.Millisecond)
+				time.Sleep(3 * time.Second)
 				cfg.OnShutdown()
 			}()
 		})

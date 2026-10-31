@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -38,8 +39,14 @@ func StartBackground(port int) error {
 	cmd := exec.Command(exe)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PORT=%d", port))
 	cmd.Stdin = nil
-	cmd.Stdout = nil
-	cmd.Stderr = nil
+	logPath := filepath.Join(os.TempDir(), "claude-observability.log")
+	if logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {
+		cmd.Stdout = logFile
+		cmd.Stderr = logFile
+	} else {
+		cmd.Stdout = nil
+		cmd.Stderr = nil
+	}
 
 	detachProcess(cmd)
 

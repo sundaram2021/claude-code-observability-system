@@ -27,6 +27,9 @@ func BuildServer(cfg *config.Config) *http.Server {
 // BuildServerWithShutdown constructs the server with an optional shutdown hook.
 func BuildServerWithShutdown(cfg *config.Config, onShutdown func()) *http.Server {
 	store := repository.NewMemoryStore(cfg.MaxTraces, cfg.MaxSessions)
+	if loaded, _ := repository.LoadFromFile(store, ""); loaded > 0 {
+		log.Printf("Loaded %d traces from disk", loaded)
+	}
 	scoreStore := repository.NewScoreStore(cfg.MaxTraces)
 
 	eventBus := service.NewEventBus()
@@ -36,6 +39,13 @@ func BuildServerWithShutdown(cfg *config.Config, onShutdown func()) *http.Server
 	scoreSvc := service.NewScoreService(scoreStore, store)
 
 	runner := agent.NewRunner(traceSvc, cfg.AnthropicAPIKey, cfg.DefaultModel)
+
+	wrappedShutdown := func() {
+		_ = repository.SaveToFile(store, "")
+		if onShutdown != nil {
+			onShutdown()
+		}
+	}
 
 	router := handler.NewRouter(handler.RouterConfig{
 		TraceHandler:   handler.NewTraceHandler(traceSvc, store),
@@ -47,7 +57,7 @@ func BuildServerWithShutdown(cfg *config.Config, onShutdown func()) *http.Server
 		AgentHandler:   handler.NewAgentHandler(runner),
 		SSEHandler:     handler.NewSSEHandler(eventBus),
 		StaticFS:       web.GetFileSystem(),
-		OnShutdown:     onShutdown,
+		OnShutdown:     wrappedShutdown,
 	})
 
 	return &http.Server{
@@ -67,7 +77,6 @@ func main() {
 			if err := cli.StartBackground(cfg.Port); err != nil {
 				log.Fatalf("Failed to start daemon: %v", err)
 			}
-			_ = cli.OpenBrowser(fmt.Sprintf("http://localhost:%d", cfg.Port))
 			return
 		case "stop":
 			_ = cli.Stop(cfg.Port)

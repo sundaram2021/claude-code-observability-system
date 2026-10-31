@@ -1,6 +1,7 @@
 package ingestion
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -68,31 +69,21 @@ func convertOTLPSpan(s OTLPSpan, resAttrs map[string]string) *domain.Span {
 	}
 
 	kind := domain.SpanKindWorkflow
-	if strings.Contains(s.Name, "tool") || attrs["gen_ai.tool.name"] != "" {
+	if strings.Contains(s.Name, "tool") || attrs["tool_name"] != "" || attrs["gen_ai.tool.name"] != "" {
 		kind = domain.SpanKindTool
-	} else if strings.Contains(s.Name, "generation") || attrs["gen_ai.request.model"] != "" {
+	} else if strings.Contains(s.Name, "llm_request") || strings.Contains(s.Name, "generation") || attrs["gen_ai.request.model"] != "" || attrs["model"] != "" {
 		kind = domain.SpanKindGeneration
 	}
 
 	model := attrs["gen_ai.request.model"]
 	if model == "" {
+		model = attrs["model"]
+	}
+	if model == "" {
 		model = attrs["llm.model_name"]
 	}
 
-	var tool *domain.ToolCall
-	toolName := attrs["gen_ai.tool.name"]
-	if toolName == "" {
-		toolName = attrs["tool.name"]
-	}
-	if toolName != "" {
-		tool = &domain.ToolCall{
-			Name:    toolName,
-			Input:   attrs["gen_ai.tool.arguments"],
-			Output:  attrs["gen_ai.tool.result"],
-			IsError: status == domain.StatusError,
-		}
-	}
-
+	tool := extractToolCall(s, attrs, status)
 	usage := extractOTLPUsage(attrs)
 	sessID := attrs["session.id"]
 	if sessID == "" {
@@ -110,10 +101,45 @@ func convertOTLPSpan(s OTLPSpan, resAttrs map[string]string) *domain.Span {
 		Model:     model,
 		StartTime: start,
 		EndTime:   end,
+		TTFTMs:    float64(parseNum(attrs, "ttft_ms", "first_content_ms")),
+		Effort:    attrs["effort"],
+		Speed:     attrs["speed"],
 		Tokens:    usage,
 		Tool:      tool,
 		Metadata:  attrs,
 	}
+}
+
+func extractToolCall(s OTLPSpan, attrs map[string]string, status domain.SpanStatus) *domain.ToolCall {
+	toolName := attrs["gen_ai.tool.name"]
+	if toolName == "" {
+		toolName = attrs["tool_name"]
+	}
+	if toolName == "" {
+		toolName = attrs["tool.name"]
+	}
+	if toolName == "" {
+		return nil
+	}
+
+	in := attrs["gen_ai.tool.arguments"]
+	if in == "" {
+		in = attrs["full_command"]
+	}
+	out := attrs["gen_ai.tool.result"]
+	if out == "" {
+		out = attrs["output"]
+	}
+	if out == "" {
+		for _, ev := range s.Events {
+			for _, a := range ev.Attributes {
+				if a.Key == "output" {
+					out = a.Value.StringValue
+				}
+			}
+		}
+	}
+	return &domain.ToolCall{Name: toolName, Input: in, Output: out, IsError: status == domain.StatusError}
 }
 
 func flattenAttributes(attrs []OTLPAttribute) map[string]string {
@@ -122,7 +148,7 @@ func flattenAttributes(attrs []OTLPAttribute) map[string]string {
 		if a.Value.StringValue != "" {
 			m[a.Key] = a.Value.StringValue
 		} else if a.Value.IntValue != nil {
-			m[a.Key] = strconv.Itoa(toInt(a.Value.IntValue))
+			m[a.Key] = fmt.Sprint(a.Value.IntValue)
 		} else if a.Value.DoubleValue != 0 {
 			m[a.Key] = strconv.FormatFloat(a.Value.DoubleValue, 'f', -1, 64)
 		} else if a.Value.BoolValue {
@@ -152,19 +178,6 @@ func parseNum(attrs map[string]string, keys ...string) int {
 	return 0
 }
 
-func toInt(v any) int {
-	switch val := v.(type) {
-	case int:
-		return val
-	case float64:
-		return int(val)
-	case string:
-		n, _ := strconv.Atoi(val)
-		return n
-	default:
-		return 0
-	}
-}
 
 func parseNanoTime(nanoStr string) time.Time {
 	if nanoStr == "" {
