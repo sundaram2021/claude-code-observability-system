@@ -60,7 +60,7 @@ Install directly as an official Claude Code plugin:
 ```bash
 # Inside Claude Code:
 /plugin install agent-observability
-/plugin install agent-observability --marketplace sundaram2021/observability-system
+/plugin install agent-observability --marketplace sundaram2021/claude-code-observability-system
 
 # Or from your terminal:
 claude plugin install agent-observability
@@ -79,8 +79,8 @@ claude plugin install agent-observability
 
 ```bash
 # Clone the repository
-git clone https://github.com/claude-code/observability-system.git
-cd observability-system
+git clone https://github.com/sundaram2021/claude-code-observability-system.git
+cd claude-code-observability-system
 
 # Build optimized single binary (6.6MB)
 go build -ldflags "-s -w" -o bin/server.exe ./cmd/server
