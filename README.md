@@ -94,8 +94,8 @@ Claude Code features built-in OpenTelemetry export. To automatically route all t
     "OTEL_METRICS_EXPORTER": "otlp",
     "OTEL_LOGS_EXPORTER": "otlp",
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
-    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:3000",
-    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT": "http://localhost:3000/v1/traces"
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:3456",
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT": "http://localhost:3456/v1/traces"
   }
 }
 ```
@@ -104,7 +104,7 @@ Now, simply start Claude Code in any terminal:
 ```bash
 claude
 ```
-Every tool execution, LLM turn, token metric, and cache hit will stream live to `http://localhost:3000`!
+Every tool execution, LLM turn, token metric, and cache hit will stream live to `http://localhost:3456`!
 
 ---
 
@@ -118,7 +118,7 @@ The repository includes a ready-to-use Claude Code custom command in [`.claude/c
 
 * **`/observe`** — Verifies or starts the background daemon and opens the live dashboard.
 * **`/observe status`** — Displays token counts, prompt cache savings, and tool success rates inside the CLI.
-* **`/observe open`** — Launches or refocuses `http://localhost:3000` in your default browser.
+* **`/observe open`** — Launches or refocuses `http://localhost:3456` in your default browser.
 * **`/observe export`** — Exports traces and scores to a JSON dataset.
 
 ---

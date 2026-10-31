@@ -8,16 +8,16 @@ The user ran `/observe` (with optional arguments: `$ARGUMENTS`).
 ## Instructions
 
 1. **If argument is empty or "start"**:
-   - Check if the observability server is running on `http://localhost:3000`.
+   - Check if the observability server is running on `http://localhost:3456`.
    - If not running, execute `./bin/server.exe start` using the bash tool.
    - Note: Telemetry is automatically loaded from `.claude/settings.json` into Claude Code.
    - Inform the user:
-     > 🚀 **Claude Code Observability is active at http://localhost:3000**
+     > 🚀 **Claude Code Observability is active at http://localhost:3456**
      > - All tool executions (`bash`, `file_edit`, `glob`, `view`), LLM generations, and prompt cache savings stream live.
-     > - Open `http://localhost:3000` to inspect waterfall traces and session analytics.
+     > - Open `http://localhost:3456` to inspect waterfall traces and session analytics.
 
 2. **If argument is "status"**:
-   - Run `./bin/server.exe status` (or query `http://localhost:3000/api/v1/metrics`).
+   - Run `./bin/server.exe status` (or query `http://localhost:3456/api/v1/metrics`).
    - Display a concise summary of:
      - Total Traces & Turns
      - Total Cost & Prompt Cache Savings ($)
@@ -25,9 +25,9 @@ The user ran `/observe` (with optional arguments: `$ARGUMENTS`).
      - Tool Call counts and Error Rates
 
 3. **If argument is "open"**:
-   - Run `./bin/server.exe open` to open `http://localhost:3000` in the user's default browser.
+   - Run `./bin/server.exe open` to open `http://localhost:3456` in the user's default browser.
 
 4. **If argument is "export"**:
-   - Fetch `http://localhost:3000/api/v1/traces/export` and save to `claude-traces-export.json`.
+   - Fetch `http://localhost:3456/api/v1/traces/export` and save to `claude-traces-export.json`.
    - Confirm export path to the user.
 

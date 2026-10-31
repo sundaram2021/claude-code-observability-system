@@ -22,8 +22,8 @@ func TestConfig_DefaultValues(t *testing.T) {
 	if cfg.Host != "0.0.0.0" {
 		t.Errorf("expected host 0.0.0.0, got %s", cfg.Host)
 	}
-	if cfg.Port != 3000 {
-		t.Errorf("expected port 3000, got %d", cfg.Port)
+	if cfg.Port != 3456 {
+		t.Errorf("expected port 3456, got %d", cfg.Port)
 	}
 	if cfg.MaxTraces != 5000 {
 		t.Errorf("expected max traces 5000, got %d", cfg.MaxTraces)
@@ -83,8 +83,8 @@ func TestConfig_InvalidIntEnvFallback(t *testing.T) {
 	defer os.Unsetenv("PORT")
 
 	cfg := config.Load()
-	if cfg.Port != 3000 {
-		t.Errorf("expected port fallback 3000, got %d", cfg.Port)
+	if cfg.Port != 3456 {
+		t.Errorf("expected port fallback 3456, got %d", cfg.Port)
 	}
 }
 

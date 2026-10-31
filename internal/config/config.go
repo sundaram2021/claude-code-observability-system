@@ -22,7 +22,7 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		Host:            getEnv("HOST", "0.0.0.0"),
-		Port:            getEnvAsInt("PORT", 3000),
+		Port:            getEnvAsInt("PORT", 3456),
 		MaxTraces:       getEnvAsInt("MAX_TRACES", 5000),
 		MaxSessions:     getEnvAsInt("MAX_SESSIONS", 1000),
 		AnthropicAPIKey: getEnv("ANTHROPIC_API_KEY", ""),
