@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agent-observability-marketplace",
+  "description": "Official marketplace for Agent Observability Plugin",
+  "owner": {
+    "name": "Sundaram Kumar Jha",
+    "email": "jhasundarm@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "agent-observability",
+      "description": "Real-time local observability dashboard and waterfall traces for Claude Code. Monitors tokens, latency, prompt cache ROI, context saturation, and tool execution.",
+      "author": {
+        "name": "Sundaram Kumar Jha",
+        "email": "jhasundarm@gmail.com"
+      },
+      "category": "developer-tools",
+      "source": "./"
+    }
+  ]
+}

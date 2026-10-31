@@ -1,10 +1,15 @@
-# Binaries
-bin/
-*.exe
+# Local temporary binaries
 *.exe~
 *.dll
 *.so
 *.dylib
+
+# Track cross-platform release binaries for direct plugin bundling
+!bin/server-windows-amd64.exe
+!bin/server-darwin-arm64
+!bin/server-darwin-amd64
+!bin/server-linux-amd64
+!bin/server.exe
 
 # Test binary, built with `go test -c`
 *.test

@@ -17,6 +17,7 @@ type RouterConfig struct {
 	AgentHandler   *AgentHandler
 	SSEHandler     *SSEHandler
 	StaticFS       http.FileSystem
+	OnShutdown     func()
 }
 
 // NewRouter constructs and configures the main HTTP multiplexer with middleware.
@@ -73,6 +74,18 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	// Realtime SSE
 	if cfg.SSEHandler != nil {
 		mux.Handle("GET /api/v1/live", cfg.SSEHandler)
+	}
+
+	// Graceful Shutdown API
+	if cfg.OnShutdown != nil {
+		mux.HandleFunc("POST /api/v1/shutdown", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"success":true,"message":"server shutting down"}`))
+			go func() {
+				time.Sleep(50 * time.Millisecond)
+				cfg.OnShutdown()
+			}()
+		})
 	}
 
 	// Static UI Dashboard

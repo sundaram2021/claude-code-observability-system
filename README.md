@@ -53,7 +53,27 @@ Anthropic's **Claude Code** is one of the most capable agentic coding tools in d
 
 ---
 
-## 🚀 Quickstart
+## 🚀 1-Step Installation (Claude Code Plugin)
+
+Install directly as an official Claude Code plugin:
+
+```bash
+# Inside Claude Code:
+/plugin install agent-observability
+/plugin install agent-observability --marketplace sundaram2021/observability-system
+
+# Or from your terminal:
+claude plugin install agent-observability
+```
+
+> **Zero Configuration & Seamless Lifecycle**:
+> - **Auto-Start**: Whenever you launch Claude Code, the backend server quietly starts on `http://localhost:3456`.
+> - **Auto-Stop**: When you exit Claude Code (`/exit` or Ctrl+C), the server terminates automatically, freeing port 3456 and all memory.
+> - **Direct Bundling**: Precompiled native binaries for Windows (`x64`), macOS (`Apple Silicon` & `Intel`), and Linux (`x64`) are bundled directly—no Go or compiler toolchain needed.
+
+---
+
+## 🛠️ Standalone Binary Quickstart (Optional)
 
 ### 1. Download or Build the Binary
 
@@ -241,6 +261,12 @@ go test -v -cover ./...
 # internal/handler:       91.1%
 # internal/ingestion:     90.5%
 ```
+
+---
+
+## 👤 Author & Maintainer
+
+**Sundaram Kumar Jha** ([jhasundarm@gmail.com](mailto:jhasundarm@gmail.com))
 
 ---
 

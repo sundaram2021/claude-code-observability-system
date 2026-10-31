@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"syscall"
 	"time"
 
 	"github.com/claude-code/observability/internal/domain"
@@ -42,11 +41,7 @@ func StartBackground(port int) error {
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 
-	if runtime.GOOS == "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			CreationFlags: 0x08000000 | 0x00000200, // CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
-		}
-	}
+	detachProcess(cmd)
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start background daemon: %w", err)
@@ -75,6 +70,24 @@ func OpenBrowser(targetURL string) error {
 		cmd = exec.Command("xdg-open", targetURL)
 	}
 	return cmd.Start()
+}
+
+// Stop gracefully terminates the daemon running on the given port.
+func Stop(port int) error {
+	if !IsRunning(port) {
+		fmt.Printf("Claude Code Observability is not running on port %d\n", port)
+		return nil
+	}
+	client := &http.Client{Timeout: 500 * time.Millisecond}
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("http://127.0.0.1:%d/api/v1/shutdown", port), nil)
+	_, _ = client.Do(req)
+	time.Sleep(100 * time.Millisecond)
+	if !IsRunning(port) {
+		fmt.Printf("✓ Claude Code Observability stopped on port %d\n", port)
+		return nil
+	}
+	fmt.Printf("✓ Shutdown signal sent to port %d\n", port)
+	return nil
 }
 
 // PrintStatus queries and displays active telemetry summary from the running daemon.

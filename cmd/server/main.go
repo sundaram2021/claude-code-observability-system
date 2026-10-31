@@ -21,6 +21,11 @@ import (
 
 // BuildServer constructs and wires the HTTP server instance.
 func BuildServer(cfg *config.Config) *http.Server {
+	return BuildServerWithShutdown(cfg, nil)
+}
+
+// BuildServerWithShutdown constructs the server with an optional shutdown hook.
+func BuildServerWithShutdown(cfg *config.Config, onShutdown func()) *http.Server {
 	store := repository.NewMemoryStore(cfg.MaxTraces, cfg.MaxSessions)
 	scoreStore := repository.NewScoreStore(cfg.MaxTraces)
 
@@ -42,6 +47,7 @@ func BuildServer(cfg *config.Config) *http.Server {
 		AgentHandler:   handler.NewAgentHandler(runner),
 		SSEHandler:     handler.NewSSEHandler(eventBus),
 		StaticFS:       web.GetFileSystem(),
+		OnShutdown:     onShutdown,
 	})
 
 	return &http.Server{
@@ -63,6 +69,9 @@ func main() {
 			}
 			_ = cli.OpenBrowser(fmt.Sprintf("http://localhost:%d", cfg.Port))
 			return
+		case "stop":
+			_ = cli.Stop(cfg.Port)
+			return
 		case "status":
 			_ = cli.PrintStatus(cfg.Port)
 			return
@@ -72,7 +81,12 @@ func main() {
 		}
 	}
 
-	srv := BuildServer(cfg)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	srv := BuildServerWithShutdown(cfg, func() {
+		quit <- os.Interrupt
+	})
 	go func() {
 		log.Printf("==========================================================")
 		log.Printf(" Claude Code Observability (Langfuse for Claude Code)")
@@ -83,8 +97,6 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
 	log.Println("Shutting down server gracefully...")

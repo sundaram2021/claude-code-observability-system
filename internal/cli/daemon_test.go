@@ -65,3 +65,17 @@ func TestPrintStatus(t *testing.T) {
 		t.Errorf("unexpected error for active server status: %v", err)
 	}
 }
+
+func TestStop(t *testing.T) {
+	_ = cli.Stop(59997)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/v1/shutdown" {
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	parts := strings.Split(server.Listener.Addr().String(), ":")
+	port, _ := strconv.Atoi(parts[len(parts)-1])
+	_ = cli.Stop(port)
+	server.Close()
+}

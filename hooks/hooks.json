@@ -1,0 +1,28 @@
+{
+  "description": "Lifecycle hooks to automatically manage the observability server",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/lifecycle.js\" start",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/lifecycle.js\" stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+

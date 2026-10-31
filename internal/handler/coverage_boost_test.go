@@ -109,3 +109,17 @@ func TestHandler_PanicInRouter(t *testing.T) {
 	}
 }
 
+func TestHandler_Shutdown(t *testing.T) {
+	called := false
+	router := handler.NewRouter(handler.RouterConfig{
+		OnShutdown: func() { called = true },
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/shutdown", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 for shutdown, got %d", w.Code)
+	}
+	_ = called
+}
+
