@@ -20,7 +20,7 @@ Trace multi-turn agent sessions, inspect tool execution trees (`bash`, `file_edi
 </div>
 
 ## UI Demo
-<img width="1917" height="902" alt="image" src="https://github.com/user-attachments/assets/15b62078-0858-4733-a576-e58586e57eae" />
+<img width="1917" height="912" alt="image" src="https://github.com/user-attachments/assets/1dedcc45-0b80-4db7-8761-125c02eb6574" />
 <img width="1917" height="460" alt="image" src="https://github.com/user-attachments/assets/7c4c5b67-d8e9-44b1-8a72-f92ae8d54155" />
 <img width="1917" height="727" alt="image" src="https://github.com/user-attachments/assets/f2ecac94-f07b-4697-a1f3-0c95db6e5d48" />
 
