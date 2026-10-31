@@ -53,23 +53,33 @@ Anthropic's **Claude Code** is one of the most capable agentic coding tools in d
 
 ---
 
-## 🚀 1-Step Installation (Claude Code Plugin)
+## 🚀 Installation (Claude Code Plugin)
 
-Install directly as an official Claude Code plugin:
+Install in seconds directly into Claude Code:
 
+### Option 1: In Terminal (Recommended)
 ```bash
-# Inside Claude Code:
-/plugin install agent-observability
-/plugin install agent-observability --marketplace sundaram2021/claude-code-observability-system
+# 1. Add this repository as a marketplace (one-time)
+claude plugin marketplace add sundaram2021/claude-code-observability-system
 
-# Or from your terminal:
+# 2. Install the plugin
 claude plugin install agent-observability
 ```
 
+### Option 2: Inside Any Claude Code Session
+```text
+/plugin marketplace add sundaram2021/claude-code-observability-system
+/plugin install agent-observability
+
+# Or in one step:
+/plugin install agent-observability --marketplace sundaram2021/claude-code-observability-system
+```
+
 > **Zero Configuration & Seamless Lifecycle**:
-> - **Auto-Start**: Whenever you launch Claude Code, the backend server quietly starts on `http://localhost:3456`.
-> - **Auto-Stop**: When you exit Claude Code (`/exit` or Ctrl+C), the server terminates automatically, freeing port 3456 and all memory.
-> - **Direct Bundling**: Precompiled native binaries for Windows (`x64`), macOS (`Apple Silicon` & `Intel`), and Linux (`x64`) are bundled directly—no Go or compiler toolchain needed.
+> - ⚡ **Auto-Start**: Whenever you launch Claude Code, the backend server quietly starts on `http://localhost:3456`.
+> - 🛑 **Auto-Stop**: When you exit Claude Code (`/exit` or Ctrl+C), the server terminates automatically, freeing port 3456 and all memory.
+> - 📦 **Direct Bundling**: Precompiled native binaries for Windows (`x64`), macOS (`Apple Silicon` & `Intel`), and Linux (`x64`) are bundled directly—no Go or compiler toolchain needed.
+> - ⚙️ **Auto-Configuration**: The plugin automatically configures your OpenTelemetry environment in `~/.claude/settings.json` on first run.
 
 ---
 
@@ -103,10 +113,11 @@ go build -ldflags "-s -w" -o bin/server.exe ./cmd/server
 
 ## 🔌 Claude Code Native Integration
 
-### Automatic Telemetry (Zero Configuration)
+### Automatic Telemetry Configuration
 
-Claude Code features built-in OpenTelemetry export. To automatically route all traces, logs, and metrics into your local observability server, add the following to your user settings (`~/.claude/settings.json`):
+> **Note**: If you installed via the Claude Code Plugin, this configuration is applied **automatically** by the `SessionStart` lifecycle hook.
 
+If you are running the standalone binary manually without the plugin, add the following to `~/.claude/settings.json`:
 ```json
 {
   "env": {
