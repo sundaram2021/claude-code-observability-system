@@ -1,0 +1,22 @@
+.claude/commands/observe.md
+  h_004cd95484b0ae 11,15,17,20,28,31
+README.md
+  h_004cd95484b0ae 97-98,107,121
+internal/config/config.go
+  h_004cd95484b0ae 25
+internal/config/config_test.go
+  h_004cd95484b0ae 25-26,86-87
+web/static/index.html
+  h_004cd95484b0ae 133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1416043cfd166282f80d729f9474a0c902976fd3",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
