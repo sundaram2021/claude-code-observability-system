@@ -1,0 +1,40 @@
+.claude-plugin/marketplace.json
+  h_f3a73e4b097486 1-21
+.claude-plugin/plugin.json
+  h_f3a73e4b097486 1-21
+.gitignore
+  h_f3a73e4b097486 1,7-13
+README.md
+  h_f3a73e4b097486 56-76,267-272
+cmd/server/main.go
+  h_f3a73e4b097486 24-28,50,72-74,84-89
+hooks/hooks.json
+  h_f3a73e4b097486 1-28
+hooks/lifecycle.js
+  h_f3a73e4b097486 1-128
+internal/cli/daemon.go
+  h_f3a73e4b097486 44,75-92
+internal/cli/daemon_test.go
+  h_f3a73e4b097486 68-81
+internal/cli/daemon_unix.go
+  h_f3a73e4b097486 1-15
+internal/cli/daemon_windows.go
+  h_f3a73e4b097486 1-15
+internal/handler/coverage_boost_test.go
+  h_f3a73e4b097486 112-125
+internal/handler/router.go
+  h_f3a73e4b097486 20,79-90
+skills/observability/SKILL.md
+  h_f3a73e4b097486 1-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5c2cdec94d995b9b604d6a0bdbff8adfcadeecf",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
