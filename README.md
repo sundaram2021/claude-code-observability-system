@@ -20,9 +20,10 @@ Trace multi-turn agent sessions, inspect tool execution trees (`bash`, `file_edi
 </div>
 
 ## UI Demo
-<img width="1917" height="905" alt="image" src="https://github.com/user-attachments/assets/f229445d-0180-467b-b9b0-95ea767a1ad9" />
-<img width="1917" height="512" alt="image" src="https://github.com/user-attachments/assets/1cbda607-6da0-44c4-a639-b825ba236386" />
-<img width="1917" height="782" alt="image" src="https://github.com/user-attachments/assets/32697036-0659-4b74-ba96-7cab6515eb04" />
+<img width="1917" height="902" alt="image" src="https://github.com/user-attachments/assets/15b62078-0858-4733-a576-e58586e57eae" />
+<img width="1917" height="460" alt="image" src="https://github.com/user-attachments/assets/7c4c5b67-d8e9-44b1-8a72-f92ae8d54155" />
+<img width="1917" height="727" alt="image" src="https://github.com/user-attachments/assets/f2ecac94-f07b-4697-a1f3-0c95db6e5d48" />
+
 
 
 ## 💡 Why Claude Code Observability?
