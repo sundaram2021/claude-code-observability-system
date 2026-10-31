@@ -1,0 +1,46 @@
+.claude-plugin/plugin.json
+  h_f3a73e4b097486 4
+cmd/server/main.go
+  h_f3a73e4b097486 37
+internal/domain/domain_test.go
+  h_f3a73e4b097486 154-158
+internal/domain/filter.go
+  h_f3a73e4b097486 65-66
+internal/domain/trace.go
+  h_f3a73e4b097486 80
+internal/ingestion/claude_parser.go
+  h_f3a73e4b097486 32-37
+internal/ingestion/otlp_log_helper.go
+  h_f3a73e4b097486 5,58-81
+internal/ingestion/otlp_log_parser.go
+  h_f3a73e4b097486 58-63,95-97
+internal/ingestion/otlp_parser.go
+  h_f3a73e4b097486 43-48
+internal/ingestion/otlp_parser_test.go
+  h_f3a73e4b097486 112,151-153
+internal/repository/file_persistence.go
+  h_f3a73e4b097486 7,83-107,111-118
+internal/repository/file_persistence_test.go
+  h_f3a73e4b097486 85-135
+internal/service/coverage_boost_test.go
+  h_f3a73e4b097486 18,36-44,46,48-49,54,56,60-116
+internal/service/trace_enricher.go
+  h_f3a73e4b097486 1-159
+internal/service/trace_service.go
+  h_f3a73e4b097486 4,13-15,26-30,62-68,74-76,82-84
+web/static/css/waterfall.css
+  h_f3a73e4b097486 175-188
+web/static/js/waterfall.js
+  h_f3a73e4b097486 17,19-20,26-31,37,39,50,56,72-75,103,118-119,136,143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6f3cc10b76a692c61fa42cdc4be1ccd8149e14f4",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
