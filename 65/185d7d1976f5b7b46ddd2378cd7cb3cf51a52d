@@ -1,0 +1,36 @@
+internal/cli/daemon.go
+  h_004cd95484b0ae 106,108-114,116
+internal/domain/metrics.go
+  h_004cd95484b0ae 26-31,34-35,51-52,54-60,70,79-87
+internal/domain/trace.go
+  h_004cd95484b0ae 28-37,51-71,76-100
+internal/ingestion/otlp_log_helper.go
+  h_004cd95484b0ae 1-56
+internal/ingestion/otlp_log_parser.go
+  h_004cd95484b0ae 146-147,153-158,161,165-182
+internal/service/metrics_service.go
+  h_004cd95484b0ae 38-39,44-59,68-78
+internal/service/trace_service.go
+  h_004cd95484b0ae 113,117-120,128-129,132-149,152-154,158-163,166-185
+web/static/css/waterfall.css
+  h_004cd95484b0ae 137-175
+web/static/index.html
+  h_004cd95484b0ae 50-51,55-57,60-62,65-66,80-85
+web/static/js/app.js
+  h_004cd95484b0ae 77-99
+web/static/js/metrics.js
+  h_004cd95484b0ae 13-14,17-20,22-25,27-29
+web/static/js/waterfall.js
+  h_004cd95484b0ae 27-31,41-44,55-63,71-111,170,174-178,180-182,189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "65185d7d1976f5b7b46ddd2378cd7cb3cf51a52d",
+  "prompts": {},
+  "humans": {
+    "h_004cd95484b0ae": {
+      "author": "Sundaram Kumar Jha <jhasundaram@outlook.com>"
+    }
+  }
+}
