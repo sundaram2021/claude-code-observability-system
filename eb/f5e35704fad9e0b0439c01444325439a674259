@@ -1,0 +1,16 @@
+internal/repository/file_persistence.go
+  h_f3a73e4b097486 92
+internal/repository/file_persistence_test.go
+  h_f3a73e4b097486 84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ebf5e35704fad9e0b0439c01444325439a674259",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
