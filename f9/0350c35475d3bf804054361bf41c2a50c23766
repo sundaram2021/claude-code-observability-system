@@ -1,0 +1,16 @@
+.claude-plugin/plugin.json
+  h_f3a73e4b097486 4
+web/static/index.html
+  h_f3a73e4b097486 39-44,102-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f90350c35475d3bf804054361bf41c2a50c23766",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
