@@ -1,0 +1,58 @@
+.agents/skills/antislop-ui/LICENSE-web-quality-skills
+  h_f3a73e4b097486 1-21
+.agents/skills/antislop-ui/SKILL.md
+  h_f3a73e4b097486 1-344
+.agents/skills/antislop-ui/references/CORE-WEB-VITALS.md
+  h_f3a73e4b097486 1-181
+.agents/skills/antislop-ui/references/WEB-BASELINE.md
+  h_f3a73e4b097486 1-28
+.claude-plugin/plugin.json
+  h_f3a73e4b097486 4
+internal/domain/trace.go
+  h_f3a73e4b097486 4,82,124-188
+internal/domain/trace_merge_test.go
+  h_f3a73e4b097486 1-117
+internal/ingestion/claude_parser.go
+  h_f3a73e4b097486 37
+internal/ingestion/otlp_log_helper.go
+  h_f3a73e4b097486 4,6,14-16,18,23,27,32-33,36-38,40-41,70-82,94-174
+internal/ingestion/otlp_log_parser.go
+  h_f3a73e4b097486 61-63
+internal/ingestion/otlp_parser.go
+  h_f3a73e4b097486 49-51
+internal/repository/file_persistence.go
+  h_f3a73e4b097486 9,84,86,89-94,97-100,105-124,127-140,142-143,147-166
+internal/repository/file_persistence_test.go
+  h_f3a73e4b097486 122,126-130,132,134-135
+internal/repository/memory_index.go
+  h_f3a73e4b097486 26-28
+internal/service/coverage_boost_test.go
+  h_f3a73e4b097486 71,86-87,94,96-97,99-100
+internal/service/trace_enricher.go
+  h_f3a73e4b097486 10,32-39,43-45
+internal/service/trace_service.go
+  h_f3a73e4b097486 32-34,48-54,79-114
+skills-lock.json
+  h_f3a73e4b097486 1-11
+web/static/css/base.css
+  h_f3a73e4b097486 13-22,27
+web/static/css/components.css
+  h_f3a73e4b097486 48-49,65-66
+web/static/css/layout.css
+  h_f3a73e4b097486 23,33-34,39,88-89
+web/static/css/waterfall.css
+  h_f3a73e4b097486 1,3-4,6,8-9,12-13,15-18,20-23,25-28,30-33,35-40,42-46,49-51,53-54,56-58,61-64,66-72,75-80,82-84,86-89,91-94,96-99,101,107
+web/static/js/waterfall.js
+  h_f3a73e4b097486 1,13-22,29-33,35-42,51,54-55,60,62-63,65-134,136,145,159,163,183,187-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "821b383e966d6839c8e3239a36ae84a9e3d8dc4e",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
