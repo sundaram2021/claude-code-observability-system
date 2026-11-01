@@ -1,0 +1,32 @@
+.claude-plugin/plugin.json
+  h_f3a73e4b097486 4
+internal/domain/trace_merge_test.go
+  h_f3a73e4b097486 118
+internal/handler/failing_repo_test.go
+  h_f3a73e4b097486 26
+internal/repository/file_persistence.go
+  h_f3a73e4b097486 113-117,155-156,158-161,163-164,167,171-176,178-185,187
+internal/repository/file_persistence_test.go
+  h_f3a73e4b097486 139-177
+internal/repository/interfaces.go
+  h_f3a73e4b097486 22
+internal/repository/memory_index.go
+  h_f3a73e4b097486 11-13,18
+internal/repository/memory_store.go
+  h_f3a73e4b097486 122-129
+internal/repository/memory_store_test.go
+  h_f3a73e4b097486 87-103
+internal/service/trace_service.go
+  h_f3a73e4b097486 54,56-58,84,88,91-94,102,109-111,116-117,123-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "414f7dbeb0c15776c32448d096ef265874bb32a3",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
