@@ -136,3 +136,42 @@ func TestFilePersistence_LoadEnrichesPrompts(t *testing.T) {
 	}
 }
 
+func TestFilePersistence_IsCorrelatedBranches(t *testing.T) {
+	now := time.Now()
+	// Different session IDs
+	t1 := &domain.Trace{SessionID: "s1"}
+	t2 := &domain.Trace{SessionID: "s2"}
+	if isCorrelated(t1, t2) {
+		t.Errorf("expected false for different session IDs")
+	}
+
+	// Different non-empty prompts
+	t1 = &domain.Trace{SessionID: "s1", UserPrompt: "prompt A"}
+	t2 = &domain.Trace{SessionID: "s1", UserPrompt: "prompt B"}
+	if isCorrelated(t1, t2) {
+		t.Errorf("expected false for different prompts")
+	}
+
+	// Zero start time
+	t1 = &domain.Trace{SessionID: "s1"}
+	t2 = &domain.Trace{SessionID: "s1", StartTime: now}
+	if !isCorrelated(t1, t2) {
+		t.Errorf("expected true when start time is zero")
+	}
+
+	// Beyond 5 minutes and no overlap
+	t1 = &domain.Trace{SessionID: "s1", StartTime: now, EndTime: now.Add(time.Second)}
+	t2 = &domain.Trace{SessionID: "s1", StartTime: now.Add(10 * time.Minute), EndTime: now.Add(11 * time.Minute)}
+	if isCorrelated(t1, t2) {
+		t.Errorf("expected false for traces 10 minutes apart")
+	}
+
+	// Overlapping interval
+	t1 = &domain.Trace{SessionID: "s1", StartTime: now, EndTime: now.Add(10 * time.Minute)}
+	t2 = &domain.Trace{SessionID: "s1", StartTime: now.Add(6 * time.Minute), EndTime: now.Add(12 * time.Minute)}
+	if !isCorrelated(t1, t2) {
+		t.Errorf("expected true for overlapping traces")
+	}
+}
+
+

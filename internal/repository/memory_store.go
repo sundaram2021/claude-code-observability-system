@@ -119,6 +119,14 @@ func (s *MemoryStore) Count() int {
 	return s.traces.Size()
 }
 
+// DeleteTrace removes a trace from the active index.
+func (s *MemoryStore) DeleteTrace(id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.traceIndex, id)
+	return nil
+}
+
 // Clear flushes all traces, spans, and sessions.
 func (s *MemoryStore) Clear() error {
 	s.mu.Lock()

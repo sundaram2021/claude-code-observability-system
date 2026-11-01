@@ -23,6 +23,7 @@ func (f *failingRepo) ListTraces(_ domain.TraceFilter) ([]*domain.Trace, int, er
 func (f *failingRepo) SaveSpan(_ *domain.Span) error                      { return errors.New("err") }
 func (f *failingRepo) GetSpan(_ string) (*domain.Span, error)             { return nil, errors.New("err") }
 func (f *failingRepo) Count() int                                         { return 0 }
+func (f *failingRepo) DeleteTrace(_ string) error                          { return errors.New("err") }
 func (f *failingRepo) Clear() error                                       { return errors.New("err") }
 func (f *failingRepo) SaveSession(_ *domain.Session) error                { return errors.New("err") }
 func (f *failingRepo) GetSession(_ string) (*domain.Session, error)       { return nil, errors.New("err") }

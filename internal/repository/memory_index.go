@@ -8,11 +8,14 @@ import (
 
 // ListTraces filters and returns traces according to query parameters.
 func (s *MemoryStore) ListTraces(filter domain.TraceFilter) ([]*domain.Trace, int, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	allTraces := s.traces.All()
 	filtered := make([]*domain.Trace, 0, len(allTraces))
 
 	for _, t := range allTraces {
-		if t != nil && filter.Matches(t) {
+		if t != nil && s.traceIndex[t.ID] != nil && filter.Matches(t) {
 			filtered = append(filtered, t)
 		}
 	}

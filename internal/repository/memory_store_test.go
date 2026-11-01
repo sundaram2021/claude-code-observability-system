@@ -84,3 +84,20 @@ func TestMemoryStore_ListAndFilterTraces(t *testing.T) {
 	}
 }
 
+func TestMemoryStore_DeleteTrace(t *testing.T) {
+	store := repository.NewMemoryStore(10, 10)
+	tr := &domain.Trace{ID: "del_1", SessionID: "s1", Name: "To delete"}
+	_ = store.SaveTrace(tr)
+
+	if err := store.DeleteTrace("del_1"); err != nil {
+		t.Fatalf("DeleteTrace failed: %v", err)
+	}
+	if _, err := store.GetTrace("del_1"); err != repository.ErrNotFound {
+		t.Errorf("expected ErrNotFound after DeleteTrace, got %v", err)
+	}
+	list, total, _ := store.ListTraces(domain.TraceFilter{})
+	if total != 0 || len(list) != 0 {
+		t.Errorf("expected 0 traces after DeleteTrace, got %d", len(list))
+	}
+}
+

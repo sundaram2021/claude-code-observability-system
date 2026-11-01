@@ -110,6 +110,11 @@ func LoadFromFile(store TraceRepository, filePath string) (int, error) {
 			loaded++
 		}
 	}
+	if len(merged) < len(traces) {
+		if cleanData, err := json.MarshalIndent(merged, "", "  "); err == nil {
+			_ = os.WriteFile(filePath, cleanData, 0644)
+		}
+	}
 	return loaded, nil
 }
 
@@ -147,22 +152,38 @@ func enrichFromSpans(t *domain.Trace) {
 }
 
 func isCorrelated(a, b *domain.Trace) bool {
-	if a.UserPrompt != "" && b.UserPrompt != "" && a.UserPrompt == b.UserPrompt {
-		return true
+	if a.SessionID == "" || a.SessionID != b.SessionID {
+		return false
 	}
-	spanIDs := make(map[string]bool, len(a.Spans))
+	if a.UserPrompt != "" && b.UserPrompt != "" && a.UserPrompt != b.UserPrompt {
+		return false
+	}
+	spanIDs := make(map[string]bool, len(a.Spans)*2)
 	for _, s := range a.Spans {
-		spanIDs[s.ID] = true
+		if s.ID != "" { spanIDs[s.ID] = true }
+		if s.ParentID != "" { spanIDs[s.ParentID] = true }
 	}
 	for _, s := range b.Spans {
-		if spanIDs[s.ID] {
+		if spanIDs[s.ID] || (s.ParentID != "" && spanIDs[s.ParentID]) {
 			return true
 		}
 	}
-	diff := a.StartTime.Sub(b.StartTime)
-	if diff < 0 {
-		diff = -diff
+	if a.UserPrompt != "" && b.UserPrompt != "" && a.UserPrompt == b.UserPrompt {
+		return true
 	}
-	return diff < 15*time.Second && (a.UserPrompt == "" || b.UserPrompt == "" || a.UserPrompt == b.UserPrompt)
+	if a.StartTime.IsZero() || b.StartTime.IsZero() {
+		return true
+	}
+	diff := a.StartTime.Sub(b.StartTime)
+	if diff < 0 { diff = -diff }
+	if diff < 5*time.Minute {
+		return true
+	}
+	if !a.EndTime.IsZero() && !b.EndTime.IsZero() {
+		if !(a.EndTime.Before(b.StartTime) || b.EndTime.Before(a.StartTime)) {
+			return true
+		}
+	}
+	return false
 }
 

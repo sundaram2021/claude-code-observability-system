@@ -51,7 +51,11 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 	}
 
 	if existing != nil {
+		otherID := t.ID
 		existing.MergeFrom(t)
+		if existing.ID != otherID {
+			_ = s.repo.DeleteTrace(otherID)
+		}
 		t = existing
 	}
 
@@ -77,14 +81,17 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 }
 
 func (s *TraceService) findCorrelatedTrace(t *domain.Trace) *domain.Trace {
-	traces, _, err := s.repo.ListTraces(domain.TraceFilter{SessionID: t.SessionID, Limit: 50})
+	traces, _, err := s.repo.ListTraces(domain.TraceFilter{SessionID: t.SessionID, Limit: 100})
 	if err != nil || len(traces) == 0 {
 		return nil
 	}
-	spanIDSet := make(map[string]bool, len(t.Spans))
+	spanIDs := make(map[string]bool, len(t.Spans)*2)
 	for _, sp := range t.Spans {
 		if sp.ID != "" {
-			spanIDSet[sp.ID] = true
+			spanIDs[sp.ID] = true
+		}
+		if sp.ParentID != "" {
+			spanIDs[sp.ParentID] = true
 		}
 	}
 	for _, cand := range traces {
@@ -92,24 +99,32 @@ func (s *TraceService) findCorrelatedTrace(t *domain.Trace) *domain.Trace {
 			continue
 		}
 		for _, sp := range cand.Spans {
-			if spanIDSet[sp.ID] {
+			if spanIDs[sp.ID] || (sp.ParentID != "" && spanIDs[sp.ParentID]) {
 				return cand
 			}
 		}
 		if t.UserPrompt != "" && cand.UserPrompt != "" && t.UserPrompt == cand.UserPrompt {
 			return cand
 		}
+		if intervalsOverlap(cand, t) && (t.UserPrompt == "" || cand.UserPrompt == "" || t.UserPrompt == cand.UserPrompt) {
+			return cand
+		}
 		diff := cand.StartTime.Sub(t.StartTime)
 		if diff < 0 {
 			diff = -diff
 		}
-		if diff < 15*time.Second {
-			if t.UserPrompt == "" || cand.UserPrompt == "" || t.UserPrompt == cand.UserPrompt {
-				return cand
-			}
+		if diff < 5*time.Minute && (t.UserPrompt == "" || cand.UserPrompt == "" || t.UserPrompt == cand.UserPrompt) {
+			return cand
 		}
 	}
 	return nil
+}
+
+func intervalsOverlap(a, b *domain.Trace) bool {
+	if a.StartTime.IsZero() || b.StartTime.IsZero() || a.EndTime.IsZero() || b.EndTime.IsZero() {
+		return false
+	}
+	return !(a.EndTime.Before(b.StartTime) || b.EndTime.Before(a.StartTime))
 }
 
 // GetTrace retrieves a trace by ID with reconstructed span hierarchy.

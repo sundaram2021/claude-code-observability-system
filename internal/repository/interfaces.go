@@ -19,6 +19,7 @@ type TraceRepository interface {
 	SaveSpan(span *domain.Span) error
 	GetSpan(id string) (*domain.Span, error)
 	Count() int
+	DeleteTrace(id string) error
 	Clear() error
 }
 

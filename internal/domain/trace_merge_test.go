@@ -115,3 +115,4 @@ func TestTrace_MergeFrom(t *testing.T) {
 		t.Errorf("expected s1 enriched with richer span data, got %+v", s1)
 	}
 }
+
