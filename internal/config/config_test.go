@@ -25,11 +25,11 @@ func TestConfig_DefaultValues(t *testing.T) {
 	if cfg.Port != 3456 {
 		t.Errorf("expected port 3456, got %d", cfg.Port)
 	}
-	if cfg.MaxTraces != 5000 {
-		t.Errorf("expected max traces 5000, got %d", cfg.MaxTraces)
+	if cfg.MaxTraces != 1000 {
+		t.Errorf("expected max traces 1000, got %d", cfg.MaxTraces)
 	}
-	if cfg.MaxSessions != 1000 {
-		t.Errorf("expected max sessions 1000, got %d", cfg.MaxSessions)
+	if cfg.MaxSessions != 200 {
+		t.Errorf("expected max sessions 200, got %d", cfg.MaxSessions)
 	}
 	if cfg.DefaultModel != "claude-3-7-sonnet-20250219" {
 		t.Errorf("expected default model, got %s", cfg.DefaultModel)

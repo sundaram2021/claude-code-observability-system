@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -40,4 +41,35 @@ func TestBuildServer(t *testing.T) {
 		t.Errorf("error during server shutdown: %v", err)
 	}
 }
+
+func TestBuildServerWithShutdown(t *testing.T) {
+	cfg := config.Load()
+	cfg.Port = 0
+	called := false
+	srv, bus := BuildServerWithShutdown(cfg, func() {
+		called = true
+	})
+	if srv == nil || bus == nil {
+		t.Fatalf("expected non-nil server and bus")
+	}
+	_ = called
+}
+
+func TestStartParentWatchdog_Termination(t *testing.T) {
+	quit := make(chan os.Signal, 1)
+
+	go func() {
+		runParentWatchdog(99999999, nil, 10*time.Millisecond, 2, quit)
+	}()
+
+	select {
+	case sig := <-quit:
+		if sig != os.Interrupt {
+			t.Errorf("expected os.Interrupt, got %v", sig)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatalf("watchdog failed to detect dead parent within 500ms")
+	}
+}
+
 

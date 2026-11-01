@@ -14,6 +14,9 @@ import (
 	"github.com/claude-code/observability/internal/domain"
 )
 
+// ExecCommand wraps exec.Command for testing.
+var ExecCommand = exec.Command
+
 // IsRunning performs a fast TCP check to verify if the server is active.
 func IsRunning(port int) bool {
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", port), 50*time.Millisecond)
@@ -36,8 +39,11 @@ func StartBackground(port int) error {
 		exe = "server.exe"
 	}
 
-	cmd := exec.Command(exe)
+	cmd := ExecCommand(exe)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PORT=%d", port))
+	if ppid := os.Getenv("CLAUDE_CODE_PID"); ppid != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("CLAUDE_CODE_PID=%s", ppid))
+	}
 	cmd.Stdin = nil
 	logPath := filepath.Join(os.TempDir(), "claude-observability.log")
 	if logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {

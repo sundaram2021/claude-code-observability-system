@@ -1,55 +1,13 @@
 package service
 
 import (
-	"strings"
-
 	"github.com/claude-code/observability/internal/domain"
-	"github.com/claude-code/observability/internal/repository"
 )
 
-// enrichTracePrompt discovers user prompt and assistant output from spans or session traces.
-func enrichTracePrompt(t *domain.Trace, repo repository.TraceRepository) {
-	if t == nil {
-		return
-	}
-	if t.UserPrompt == "" {
-		for _, sp := range t.Spans {
-			if sp == nil || sp.Metadata == nil {
-				continue
-			}
-			for _, k := range []string{"user_prompt", "prompt", "gen_ai.prompt", "query"} {
-				if val := sp.Metadata[k]; val != "" {
-					t.UserPrompt = val
-					break
-				}
-			}
-			if t.UserPrompt != "" {
-				break
-			}
-		}
-	}
-
-	if t.UserOutput == "" {
-		for _, sp := range t.Spans {
-			if sp == nil || sp.Metadata == nil {
-				continue
-			}
-			for _, k := range []string{"response", "assistant_response", "text", "content"} {
-				if val := sp.Metadata[k]; val != "" && !strings.HasPrefix(val, "claude_code.") {
-					t.UserOutput = val
-					break
-				}
-			}
-			if t.UserOutput != "" {
-				break
-			}
-		}
-	}
-
-	if t.UserPrompt != "" {
-		if t.Name == "" || t.Name == "Claude Code Turn" || strings.HasPrefix(t.Name, "claude_code.") || strings.HasPrefix(t.Name, "Claude Code (") {
-			t.Name = t.UserPrompt
-		}
+// enrichTracePrompt discovers user prompt and assistant output from spans.
+func enrichTracePrompt(t *domain.Trace) {
+	if t != nil {
+		t.EnrichPromptAndOutput()
 	}
 }
 

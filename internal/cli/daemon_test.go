@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"testing"
@@ -79,3 +81,88 @@ func TestStop(t *testing.T) {
 	_ = cli.Stop(port)
 	server.Close()
 }
+
+func TestIsProcessAlive(t *testing.T) {
+	myPid := os.Getpid()
+	if !cli.IsProcessAlive(myPid) {
+		t.Errorf("expected current process %d to be alive", myPid)
+	}
+
+	if cli.IsProcessAlive(0) {
+		t.Errorf("expected PID 0 to be dead")
+	}
+
+	if cli.IsProcessAlive(-5) {
+		t.Errorf("expected negative PID to be dead")
+	}
+
+	if cli.IsProcessAlive(99999999) {
+		t.Errorf("expected non-existent PID to be dead")
+	}
+}
+
+func TestPrintStatus_BadResponses(t *testing.T) {
+	// Bad JSON
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{malformed json`)
+	}))
+	defer server.Close()
+	parts := strings.Split(server.Listener.Addr().String(), ":")
+	port, _ := strconv.Atoi(parts[len(parts)-1])
+	_ = cli.PrintStatus(port)
+
+	// Connection error
+	_ = cli.PrintStatus(59996)
+
+	// Cache multiplier branch
+	server2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"success": true, "data": {"cacheMultiplier": 2.5, "cacheHitRate": 85.0}}`)
+	}))
+	defer server2.Close()
+	parts2 := strings.Split(server2.Listener.Addr().String(), ":")
+	port2, _ := strconv.Atoi(parts2[len(parts2)-1])
+	_ = cli.PrintStatus(port2)
+}
+
+func TestOpenBrowser(t *testing.T) {
+	// Should not panic or crash
+	_ = cli.OpenBrowser("http://localhost:3456")
+}
+
+func TestStop_Persistent(t *testing.T) {
+	// Server responds but stays open (simulating line 99)
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen failed: %v", err)
+	}
+	defer ln.Close()
+
+	parts := strings.Split(ln.Addr().String(), ":")
+	port, _ := strconv.Atoi(parts[len(parts)-1])
+	_ = cli.Stop(port)
+}
+
+func TestStartBackground_LaunchFailure(t *testing.T) {
+	os.Setenv("CLAUDE_CODE_PID", "12345")
+	defer os.Unsetenv("CLAUDE_CODE_PID")
+
+	oldExec := cli.ExecCommand
+	cli.ExecCommand = func(name string, arg ...string) *exec.Cmd {
+		return exec.Command("cmd", "/c", "exit", "0")
+	}
+	defer func() { cli.ExecCommand = oldExec }()
+
+	_ = cli.StartBackground(59990)
+
+	// Command start failure branch
+	cli.ExecCommand = func(name string, arg ...string) *exec.Cmd {
+		return exec.Command("nonexistent_binary_xyz_12345")
+	}
+	_ = cli.StartBackground(59991)
+}
+
+
+
+

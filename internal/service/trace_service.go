@@ -59,7 +59,7 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 		t = existing
 	}
 
-	enrichTracePrompt(t, s.repo)
+	enrichTracePrompt(t)
 	enrichSpans(t)
 	calculateTotals(t)
 	t.RootSpan = BuildSpanTree(t.Spans)
@@ -85,46 +85,12 @@ func (s *TraceService) findCorrelatedTrace(t *domain.Trace) *domain.Trace {
 	if err != nil || len(traces) == 0 {
 		return nil
 	}
-	spanIDs := make(map[string]bool, len(t.Spans)*2)
-	for _, sp := range t.Spans {
-		if sp.ID != "" {
-			spanIDs[sp.ID] = true
-		}
-		if sp.ParentID != "" {
-			spanIDs[sp.ParentID] = true
-		}
-	}
 	for _, cand := range traces {
-		if cand.ID == t.ID {
-			continue
-		}
-		for _, sp := range cand.Spans {
-			if spanIDs[sp.ID] || (sp.ParentID != "" && spanIDs[sp.ParentID]) {
-				return cand
-			}
-		}
-		if t.UserPrompt != "" && cand.UserPrompt != "" && t.UserPrompt == cand.UserPrompt {
-			return cand
-		}
-		if intervalsOverlap(cand, t) && (t.UserPrompt == "" || cand.UserPrompt == "" || t.UserPrompt == cand.UserPrompt) {
-			return cand
-		}
-		diff := cand.StartTime.Sub(t.StartTime)
-		if diff < 0 {
-			diff = -diff
-		}
-		if diff < 5*time.Minute && (t.UserPrompt == "" || cand.UserPrompt == "" || t.UserPrompt == cand.UserPrompt) {
+		if cand.ID != t.ID && cand.IsCorrelatedWith(t) {
 			return cand
 		}
 	}
 	return nil
-}
-
-func intervalsOverlap(a, b *domain.Trace) bool {
-	if a.StartTime.IsZero() || b.StartTime.IsZero() || a.EndTime.IsZero() || b.EndTime.IsZero() {
-		return false
-	}
-	return !(a.EndTime.Before(b.StartTime) || b.EndTime.Before(a.StartTime))
 }
 
 // GetTrace retrieves a trace by ID with reconstructed span hierarchy.

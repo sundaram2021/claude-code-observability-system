@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/claude-code/observability/internal/domain"
 )
@@ -86,10 +84,10 @@ func LoadFromFile(store TraceRepository, filePath string) (int, error) {
 		if t == nil || t.ID == "" || t.IsStartupPlumbing() {
 			continue
 		}
-		enrichFromSpans(t)
+		t.EnrichPromptAndOutput()
 		var existing *domain.Trace
 		for _, m := range merged {
-			if m.ID == t.ID || (m.SessionID != "" && m.SessionID == t.SessionID && isCorrelated(m, t)) {
+			if m.ID == t.ID || m.IsCorrelatedWith(t) {
 				existing = m
 				break
 			}
@@ -103,9 +101,7 @@ func LoadFromFile(store TraceRepository, filePath string) (int, error) {
 
 	loaded := 0
 	for _, t := range merged {
-		if t.UserPrompt != "" && (t.Name == "" || t.Name == "Claude Code Turn" || strings.HasPrefix(t.Name, "claude_code.")) {
-			t.Name = t.UserPrompt
-		}
+		t.EnrichPromptAndOutput()
 		if err := store.SaveTrace(t); err == nil {
 			loaded++
 		}
@@ -117,73 +113,3 @@ func LoadFromFile(store TraceRepository, filePath string) (int, error) {
 	}
 	return loaded, nil
 }
-
-func enrichFromSpans(t *domain.Trace) {
-	if t.UserPrompt == "" {
-		for _, sp := range t.Spans {
-			if sp != nil && sp.Metadata != nil {
-				for _, k := range []string{"user_prompt", "prompt", "gen_ai.prompt", "query"} {
-					if val := sp.Metadata[k]; val != "" {
-						t.UserPrompt = val
-						break
-					}
-				}
-			}
-			if t.UserPrompt != "" {
-				break
-			}
-		}
-	}
-	if t.UserOutput == "" {
-		for _, sp := range t.Spans {
-			if sp != nil && sp.Metadata != nil {
-				for _, k := range []string{"response", "assistant_response", "text", "content"} {
-					if val := sp.Metadata[k]; val != "" && !strings.HasPrefix(val, "claude_code.") {
-						t.UserOutput = val
-						break
-					}
-				}
-			}
-			if t.UserOutput != "" {
-				break
-			}
-		}
-	}
-}
-
-func isCorrelated(a, b *domain.Trace) bool {
-	if a.SessionID == "" || a.SessionID != b.SessionID {
-		return false
-	}
-	if a.UserPrompt != "" && b.UserPrompt != "" && a.UserPrompt != b.UserPrompt {
-		return false
-	}
-	spanIDs := make(map[string]bool, len(a.Spans)*2)
-	for _, s := range a.Spans {
-		if s.ID != "" { spanIDs[s.ID] = true }
-		if s.ParentID != "" { spanIDs[s.ParentID] = true }
-	}
-	for _, s := range b.Spans {
-		if spanIDs[s.ID] || (s.ParentID != "" && spanIDs[s.ParentID]) {
-			return true
-		}
-	}
-	if a.UserPrompt != "" && b.UserPrompt != "" && a.UserPrompt == b.UserPrompt {
-		return true
-	}
-	if a.StartTime.IsZero() || b.StartTime.IsZero() {
-		return true
-	}
-	diff := a.StartTime.Sub(b.StartTime)
-	if diff < 0 { diff = -diff }
-	if diff < 5*time.Minute {
-		return true
-	}
-	if !a.EndTime.IsZero() && !b.EndTime.IsZero() {
-		if !(a.EndTime.Before(b.StartTime) || b.EndTime.Before(a.StartTime)) {
-			return true
-		}
-	}
-	return false
-}
-

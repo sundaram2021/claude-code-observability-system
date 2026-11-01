@@ -116,3 +116,68 @@ func TestTrace_MergeFrom(t *testing.T) {
 	}
 }
 
+func TestTrace_IsCorrelatedWith(t *testing.T) {
+	now := time.Now()
+	var nilT *domain.Trace
+	if nilT.IsCorrelatedWith(nil) {
+		t.Errorf("expected false for nil traces")
+	}
+
+	t1 := &domain.Trace{SessionID: "s1"}
+	t2 := &domain.Trace{SessionID: "s2"}
+	if t1.IsCorrelatedWith(t2) {
+		t.Errorf("expected false for different session IDs")
+	}
+
+	t1 = &domain.Trace{SessionID: "s1", UserPrompt: "A"}
+	t2 = &domain.Trace{SessionID: "s1", UserPrompt: "B"}
+	if t1.IsCorrelatedWith(t2) {
+		t.Errorf("expected false for differing prompts")
+	}
+
+	t1 = &domain.Trace{SessionID: "s1", Spans: []*domain.Span{{ID: "sp1"}}}
+	t2 = &domain.Trace{SessionID: "s1", Spans: []*domain.Span{{ParentID: "sp1"}}}
+	if !t1.IsCorrelatedWith(t2) {
+		t.Errorf("expected true when child span parent matches")
+	}
+
+	t1 = &domain.Trace{SessionID: "s1", UserPrompt: "same"}
+	t2 = &domain.Trace{SessionID: "s1", UserPrompt: "same"}
+	if !t1.IsCorrelatedWith(t2) {
+		t.Errorf("expected true for matching prompt")
+	}
+
+	t1 = &domain.Trace{SessionID: "s1", StartTime: now, EndTime: now.Add(10 * time.Minute)}
+	t2 = &domain.Trace{SessionID: "s1", StartTime: now.Add(6 * time.Minute), EndTime: now.Add(12 * time.Minute)}
+	if !t1.IsCorrelatedWith(t2) {
+		t.Errorf("expected true for overlapping intervals")
+	}
+
+	t1 = &domain.Trace{SessionID: "s1", StartTime: now, EndTime: now.Add(time.Second)}
+	t2 = &domain.Trace{SessionID: "s1", StartTime: now.Add(15 * time.Minute), EndTime: now.Add(16 * time.Minute)}
+	if t1.IsCorrelatedWith(t2) {
+		t.Errorf("expected false for separated non-overlapping intervals")
+	}
+}
+
+func TestTrace_EnrichPromptAndOutput(t *testing.T) {
+	var nilT *domain.Trace
+	nilT.EnrichPromptAndOutput()
+
+	tr := &domain.Trace{
+		Name: "Claude Code Turn",
+		Spans: []*domain.Span{
+			{
+				ID: "sp1",
+				Metadata: map[string]string{
+					"prompt":   "optimize memory",
+					"response": "done",
+				},
+			},
+		},
+	}
+	tr.EnrichPromptAndOutput()
+	if tr.UserPrompt != "optimize memory" || tr.UserOutput != "done" || tr.Name != "optimize memory" {
+		t.Errorf("enrichment failed: %+v", tr)
+	}
+}

@@ -23,8 +23,8 @@ func Load() *Config {
 	return &Config{
 		Host:            getEnv("HOST", "0.0.0.0"),
 		Port:            getEnvAsInt("PORT", 3456),
-		MaxTraces:       getEnvAsInt("MAX_TRACES", 5000),
-		MaxSessions:     getEnvAsInt("MAX_SESSIONS", 1000),
+		MaxTraces:       getEnvAsInt("MAX_TRACES", 1000),
+		MaxSessions:     getEnvAsInt("MAX_SESSIONS", 200),
 		AnthropicAPIKey: getEnv("ANTHROPIC_API_KEY", ""),
 		DefaultModel:    getEnv("DEFAULT_MODEL", "claude-3-7-sonnet-20250219"),
 		ReadTimeout:     15 * time.Second,

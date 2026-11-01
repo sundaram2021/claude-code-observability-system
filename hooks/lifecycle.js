@@ -101,7 +101,10 @@ function handleStart() {
 
     const child = spawn(bin, ['start'], {
       stdio: 'ignore',
-      env: Object.assign({}, process.env, { PORT: String(PORT) })
+      env: Object.assign({}, process.env, {
+        PORT: String(PORT),
+        CLAUDE_CODE_PID: String(process.ppid)
+      })
     });
 
     child.on('exit', () => {
