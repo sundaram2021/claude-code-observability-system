@@ -54,28 +54,43 @@ const API = {
 
   connectSSE(onEvent, onStatusChange) {
     let evtSource = null;
+    let retryDelay = 1000;
 
     function connect() {
-      if (onStatusChange) onStatusChange(false);
+      if (evtSource) {
+        evtSource.close();
+      }
       evtSource = new EventSource('/api/v1/live');
 
+      evtSource.onopen = () => {
+        retryDelay = 1000;
+        if (onStatusChange) onStatusChange(true);
+      };
+
       evtSource.addEventListener('connected', () => {
+        retryDelay = 1000;
         if (onStatusChange) onStatusChange(true);
       });
 
-      evtSource.addEventListener('TRACE_CREATED', (e) => {
+      const handleEvent = (e) => {
         try {
-          const data = JSON.parse(e.data);
-          if (onEvent) onEvent('TRACE_CREATED', data);
-        } catch (err) {
-          console.error('SSE parse error:', err);
+          const data = e.data ? JSON.parse(e.data) : {};
+          if (onEvent) onEvent(e.type, data);
+        } catch (_) {
+          if (onEvent) onEvent(e.type, {});
         }
-      });
+      };
+
+      evtSource.addEventListener('TRACE_CREATED', handleEvent);
+      evtSource.addEventListener('TRACE_UPDATED', handleEvent);
+      evtSource.addEventListener('SPAN_CREATED', handleEvent);
+      evtSource.onmessage = handleEvent;
 
       evtSource.onerror = () => {
         if (onStatusChange) onStatusChange(false);
         evtSource.close();
-        setTimeout(connect, 4000);
+        setTimeout(connect, retryDelay);
+        retryDelay = Math.min(retryDelay * 1.5, 5000);
       };
     }
 

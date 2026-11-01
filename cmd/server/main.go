@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -68,10 +67,11 @@ func BuildServerWithShutdown(cfg *config.Config, onShutdown func()) (*http.Serve
 	})
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Handler:      router,
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
+		Addr:              fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      0, // Streaming SSE / live events require zero write deadline
 	}
 	return srv, eventBus
 }
@@ -101,16 +101,9 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-	srv, bus := BuildServerWithShutdown(cfg, func() {
+	srv, _ := BuildServerWithShutdown(cfg, func() {
 		quit <- os.Interrupt
 	})
-
-	// Watchdog for parent Claude Code process
-	if ppidStr := os.Getenv("CLAUDE_CODE_PID"); ppidStr != "" {
-		if ppid, err := strconv.Atoi(ppidStr); err == nil && ppid > 0 {
-			go startParentWatchdog(ppid, bus, quit)
-		}
-	}
 
 	go func() {
 		log.Printf("==========================================================")
@@ -129,27 +122,4 @@ func main() {
 	defer cancel()
 	_ = srv.Shutdown(ctx)
 	log.Println("Server exited cleanly.")
-}
-
-func runParentWatchdog(pid int, bus *service.EventBus, interval time.Duration, maxDead int, quit chan os.Signal) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	deadTicks := 0
-
-	for range ticker.C {
-		if !cli.IsProcessAlive(pid) {
-			deadTicks++
-			if deadTicks >= maxDead && (bus == nil || bus.SubscriberCount() == 0) {
-				log.Printf("Parent Claude Code process (%d) exited. Shutting down daemon...", pid)
-				quit <- os.Interrupt
-				return
-			}
-		} else {
-			deadTicks = 0
-		}
-	}
-}
-
-func startParentWatchdog(pid int, bus *service.EventBus, quit chan os.Signal) {
-	runParentWatchdog(pid, bus, 10*time.Second, 3, quit)
 }

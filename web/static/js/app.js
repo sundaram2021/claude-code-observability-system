@@ -36,6 +36,13 @@ const App = {
       }
     );
 
+    // Real-time fallback polling every 2.5s when page is visible
+    setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        this.refreshAll();
+      }
+    }, 2500);
+
     await this.refreshAll();
   },
 

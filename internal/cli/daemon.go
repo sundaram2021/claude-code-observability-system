@@ -41,9 +41,6 @@ func StartBackground(port int) error {
 
 	cmd := ExecCommand(exe)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PORT=%d", port))
-	if ppid := os.Getenv("CLAUDE_CODE_PID"); ppid != "" {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("CLAUDE_CODE_PID=%s", ppid))
-	}
 	cmd.Stdin = nil
 	logPath := filepath.Join(os.TempDir(), "claude-observability.log")
 	if logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {

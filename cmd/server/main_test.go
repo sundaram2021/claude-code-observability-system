@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net"
-	"os"
 	"testing"
 	"time"
 
@@ -54,22 +53,3 @@ func TestBuildServerWithShutdown(t *testing.T) {
 	}
 	_ = called
 }
-
-func TestStartParentWatchdog_Termination(t *testing.T) {
-	quit := make(chan os.Signal, 1)
-
-	go func() {
-		runParentWatchdog(99999999, nil, 10*time.Millisecond, 2, quit)
-	}()
-
-	select {
-	case sig := <-quit:
-		if sig != os.Interrupt {
-			t.Errorf("expected os.Interrupt, got %v", sig)
-		}
-	case <-time.After(500 * time.Millisecond):
-		t.Fatalf("watchdog failed to detect dead parent within 500ms")
-	}
-}
-
-
