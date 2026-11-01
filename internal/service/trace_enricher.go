@@ -7,7 +7,7 @@ import (
 	"github.com/claude-code/observability/internal/repository"
 )
 
-// enrichTracePrompt discovers user prompt from spans or session traces.
+// enrichTracePrompt discovers user prompt and assistant output from spans or session traces.
 func enrichTracePrompt(t *domain.Trace, repo repository.TraceRepository) {
 	if t == nil {
 		return
@@ -29,13 +29,19 @@ func enrichTracePrompt(t *domain.Trace, repo repository.TraceRepository) {
 		}
 	}
 
-	if t.UserPrompt == "" && t.SessionID != "" && repo != nil {
-		if traces, _, err := repo.ListTraces(domain.TraceFilter{SessionID: t.SessionID, Limit: 100}); err == nil {
-			for _, other := range traces {
-				if other != nil && other.UserPrompt != "" {
-					t.UserPrompt = other.UserPrompt
+	if t.UserOutput == "" {
+		for _, sp := range t.Spans {
+			if sp == nil || sp.Metadata == nil {
+				continue
+			}
+			for _, k := range []string{"response", "assistant_response", "text", "content"} {
+				if val := sp.Metadata[k]; val != "" && !strings.HasPrefix(val, "claude_code.") {
+					t.UserOutput = val
 					break
 				}
+			}
+			if t.UserOutput != "" {
+				break
 			}
 		}
 	}
@@ -43,19 +49,6 @@ func enrichTracePrompt(t *domain.Trace, repo repository.TraceRepository) {
 	if t.UserPrompt != "" {
 		if t.Name == "" || t.Name == "Claude Code Turn" || strings.HasPrefix(t.Name, "claude_code.") || strings.HasPrefix(t.Name, "Claude Code (") {
 			t.Name = t.UserPrompt
-		}
-		if t.SessionID != "" && repo != nil {
-			if traces, _, err := repo.ListTraces(domain.TraceFilter{SessionID: t.SessionID, Limit: 100}); err == nil {
-				for _, other := range traces {
-					if other != nil && other.UserPrompt == "" {
-						other.UserPrompt = t.UserPrompt
-						if other.Name == "" || other.Name == "Claude Code Turn" || strings.HasPrefix(other.Name, "claude_code.") || strings.HasPrefix(other.Name, "Claude Code (") {
-							other.Name = t.UserPrompt
-						}
-						_ = repo.SaveTrace(other)
-					}
-				}
-			}
 		}
 	}
 }

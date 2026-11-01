@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"time"
 )
 
@@ -78,6 +79,7 @@ type Trace struct {
 	Project              string            `json:"project,omitempty"`
 	Name                 string            `json:"name"`
 	UserPrompt           string            `json:"userPrompt,omitempty"`
+	UserOutput           string            `json:"userOutput,omitempty"`
 	Status               SpanStatus        `json:"status"`
 	UserID               string            `json:"userId,omitempty"`
 	Tags                 []string          `json:"tags,omitempty"`
@@ -117,5 +119,70 @@ func (s *Span) CalculateDuration() {
 func (t *Trace) AddScore(score *Score) {
 	if score != nil {
 		t.Scores = append(t.Scores, score)
+	}
+}
+
+// IsStartupPlumbing returns true if the trace only contains zero-duration lifecycle hook events.
+func (t *Trace) IsStartupPlumbing() bool {
+	if t == nil || t.UserPrompt != "" || t.UserOutput != "" || len(t.Spans) == 0 {
+		return false
+	}
+	for _, sp := range t.Spans {
+		if sp.Kind == SpanKindGeneration || sp.Kind == SpanKindTool || sp.Model != "" || sp.Tool != nil || sp.DurationMs > 50 {
+			return false
+		}
+		name := sp.Name
+		if !strings.HasPrefix(name, "Event: hook_") && !strings.HasPrefix(name, "Event: managed_settings_") && !strings.HasPrefix(name, "Event: plugin_loaded") {
+			return false
+		}
+	}
+	return true
+}
+
+// MergeFrom merges spans, metadata, prompt, and output from another trace into t.
+func (t *Trace) MergeFrom(src *Trace) {
+	if src == nil {
+		return
+	}
+	spanMap := make(map[string]*Span, len(t.Spans))
+	for _, s := range t.Spans {
+		spanMap[s.ID] = s
+	}
+	for _, s := range src.Spans {
+		if ex, ok := spanMap[s.ID]; ok {
+			if s.DurationMs > ex.DurationMs {
+				ex.DurationMs, ex.StartTime, ex.EndTime = s.DurationMs, s.StartTime, s.EndTime
+			}
+			if ex.Kind == SpanKindWorkflow && s.Kind != SpanKindWorkflow { ex.Kind = s.Kind }
+			if ex.Model == "" && s.Model != "" { ex.Model = s.Model }
+			if ex.Tool == nil && s.Tool != nil { ex.Tool = s.Tool }
+			if s.Tokens.TotalTokens > ex.Tokens.TotalTokens { ex.Tokens = s.Tokens }
+			if ex.ParentID == "" && s.ParentID != "" { ex.ParentID = s.ParentID }
+			if s.Status == StatusError { ex.Status = StatusError }
+		} else {
+			t.Spans = append(t.Spans, s)
+			spanMap[s.ID] = s
+		}
+	}
+	if !src.StartTime.IsZero() && (t.StartTime.IsZero() || src.StartTime.Before(t.StartTime)) {
+		t.StartTime = src.StartTime
+	}
+	if src.EndTime.After(t.EndTime) {
+		t.EndTime = src.EndTime
+	}
+	if t.UserPrompt == "" && src.UserPrompt != "" {
+		t.UserPrompt = src.UserPrompt
+	}
+	if t.UserOutput == "" && src.UserOutput != "" {
+		t.UserOutput = src.UserOutput
+	}
+	if (t.Name == "" || t.Name == "Claude Code Turn" || strings.HasPrefix(t.Name, "claude_code.")) && src.Name != "" && !strings.HasPrefix(src.Name, "claude_code.") {
+		t.Name = src.Name
+	}
+	if t.UserPrompt != "" {
+		t.Name = t.UserPrompt
+	}
+	if src.Status == StatusError {
+		t.Status = StatusError
 	}
 }

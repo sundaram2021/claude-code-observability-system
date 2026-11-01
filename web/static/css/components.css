@@ -45,8 +45,8 @@
   transition: all 0.15s ease;
 }
 
-.btn-primary { background-color: var(--accent-purple); color: #fff; }
-.btn-primary:hover { background-color: #8a57e3; }
+.btn-primary { background-color: var(--accent-claude); color: #fff; }
+.btn-primary:hover { background-color: var(--accent-claude-dark); }
 .btn-secondary { background-color: var(--bg-tertiary); color: var(--text-main); border-color: var(--border-color); }
 .btn-secondary:hover { background-color: var(--border-light); }
 .btn-danger { background-color: rgba(248, 81, 73, 0.1); color: var(--accent-red); border-color: rgba(248, 81, 73, 0.2); }
@@ -62,8 +62,8 @@
   font-family: var(--font-mono);
 }
 
-.badge-tool { background-color: rgba(57, 197, 187, 0.15); color: var(--accent-cyan); border: 1px solid rgba(57, 197, 187, 0.3); }
-.badge-model { background-color: rgba(163, 113, 247, 0.15); color: var(--accent-purple); border: 1px solid rgba(163, 113, 247, 0.3); }
+.badge-tool { background-color: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
+.badge-model { background-color: rgba(217, 119, 87, 0.15); color: var(--accent-claude); border: 1px solid rgba(217, 119, 87, 0.3); }
 .badge-success { background-color: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
 .badge-error { background-color: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
 

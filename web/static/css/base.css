@@ -10,12 +10,21 @@
   --text-muted: #8b949e;
   --text-dim: #6e7681;
 
-  --accent-purple: #a371f7;
+  --accent-claude: #d97757;
+  --accent-claude-dark: #c05c3d;
+  --accent-claude-light: #ea8a68;
+  --accent-claude-bg: rgba(217, 119, 87, 0.15);
+  --accent-claude-border: rgba(217, 119, 87, 0.35);
+
+  --accent-pink: #ec4899;
+  --accent-pink-bg: rgba(236, 72, 153, 0.15);
+
+  --accent-purple: #d97757;
   --accent-blue: #58a6ff;
   --accent-green: #3fb950;
   --accent-orange: #d29922;
   --accent-red: #f85149;
-  --accent-cyan: #39c5bb;
+  --accent-cyan: #38bdf8;
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;

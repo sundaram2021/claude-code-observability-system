@@ -20,7 +20,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent-purple);
+  color: var(--accent-claude);
   font-weight: 600;
   font-size: 16px;
 }
@@ -30,13 +30,13 @@
 }
 
 .logo-badge {
-  background-color: rgba(163, 113, 247, 0.15);
-  color: var(--accent-purple);
+  background-color: rgba(217, 119, 87, 0.15);
+  color: var(--accent-claude);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
-  border: 1px solid rgba(163, 113, 247, 0.3);
+  border: 1px solid rgba(217, 119, 87, 0.35);
 }
 
 .live-pill {
@@ -59,7 +59,6 @@
 
 .live-pill.connected .live-dot {
   background-color: var(--accent-green);
-  box-shadow: 0 0 6px var(--accent-green);
 }
 
 .nav-tabs {
@@ -86,8 +85,8 @@
 
 .nav-tab.active {
   background-color: var(--bg-tertiary);
-  color: var(--accent-blue);
-  border-bottom: 2px solid var(--accent-blue);
+  color: var(--accent-claude);
+  border-bottom: 2px solid var(--accent-claude);
 }
 
 .header-actions {

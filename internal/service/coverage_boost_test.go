@@ -68,7 +68,7 @@ func TestService_EnrichTracePrompt(t *testing.T) {
 		SessionID: "sess_p1",
 		Name:      "claude_code.llm_request",
 		Spans: []*domain.Span{
-			{ID: "sp_1", Name: "claude_code.llm_request"},
+			{ID: "sp_1", Name: "claude_code.llm_request", Kind: domain.SpanKindGeneration, DurationMs: 100},
 		},
 	}
 	_ = traceSvc.IngestTrace(t1)
@@ -83,34 +83,20 @@ func TestService_EnrichTracePrompt(t *testing.T) {
 				ID:   "sp_2",
 				Name: "Event: user_prompt",
 				Metadata: map[string]string{
-					"prompt": "explain code",
+					"prompt":   "explain code",
+					"response": "code summary output",
 				},
 			},
 		},
 	}
 	_ = traceSvc.IngestTrace(t2)
 
-	if t2.UserPrompt != "explain code" || t2.Name != "explain code" {
-		t.Errorf("expected t2 prompt and name 'explain code', got prompt=%s, name=%s", t2.UserPrompt, t2.Name)
-	}
-
-	// Verify backpropagation to t1
+	// Verify t2 merged into t1 into a single canonical trace
 	reloadedT1, err := traceSvc.GetTrace("trc_sess_1")
-	if err != nil || reloadedT1.UserPrompt != "explain code" {
-		t.Errorf("expected t1 to inherit prompt 'explain code', got %+v", reloadedT1)
+	if err != nil || reloadedT1.UserPrompt != "explain code" || reloadedT1.UserOutput != "code summary output" {
+		t.Errorf("expected t1 to have merged prompt and output, got %+v", reloadedT1)
 	}
-
-	// 3. Trace 3 in same session arrives later without prompt - should inherit from session
-	t3 := &domain.Trace{
-		ID:        "trc_sess_3",
-		SessionID: "sess_p1",
-		Name:      "claude_code.interaction",
-		Spans: []*domain.Span{
-			{ID: "sp_3", Name: "claude_code.interaction"},
-		},
-	}
-	_ = traceSvc.IngestTrace(t3)
-	if t3.UserPrompt != "explain code" {
-		t.Errorf("expected t3 to inherit session prompt, got %s", t3.UserPrompt)
+	if len(reloadedT1.Spans) != 2 {
+		t.Errorf("expected 2 merged spans in t1, got %d", len(reloadedT1.Spans))
 	}
 }

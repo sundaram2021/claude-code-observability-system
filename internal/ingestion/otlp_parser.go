@@ -46,6 +46,9 @@ func ParseOTLPTraces(payload *OTLPTracesPayload) []*domain.Trace {
 						trace.Name = trace.UserPrompt
 					}
 				}
+				if trace.UserOutput == "" {
+					trace.UserOutput = extractResponseFromAttrs(span.Metadata)
+				}
 				if span.StartTime.Before(trace.StartTime) || trace.StartTime.IsZero() {
 					trace.StartTime = span.StartTime
 				}

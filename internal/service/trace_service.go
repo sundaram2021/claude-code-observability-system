@@ -1,7 +1,6 @@
 package service
 
 import (
-	"strings"
 	"time"
 
 	"github.com/claude-code/observability/internal/domain"
@@ -30,6 +29,9 @@ func (s *TraceService) SetPersistencePath(p string) {
 
 // IngestTrace enriches, builds tree, computes totals, stores, and broadcasts a trace.
 func (s *TraceService) IngestTrace(t *domain.Trace) error {
+	if t == nil || t.IsStartupPlumbing() {
+		return nil
+	}
 	if t.ID == "" {
 		t.ID = generateID("trc_")
 	}
@@ -43,31 +45,13 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 		t.DurationMs = float64(t.EndTime.Sub(t.StartTime).Microseconds()) / 1000.0
 	}
 
-	if existing, err := s.repo.GetTrace(t.ID); err == nil && existing != nil {
-		spanIDs := make(map[string]bool, len(existing.Spans))
-		for _, sp := range existing.Spans {
-			spanIDs[sp.ID] = true
-		}
-		for _, sp := range t.Spans {
-			if !spanIDs[sp.ID] {
-				existing.Spans = append(existing.Spans, sp)
-			}
-		}
-		if t.EndTime.After(existing.EndTime) {
-			existing.EndTime = t.EndTime
-		}
-		if existing.SessionID == "" && t.SessionID != "" {
-			existing.SessionID = t.SessionID
-		}
-		if existing.UserPrompt == "" && t.UserPrompt != "" {
-			existing.UserPrompt = t.UserPrompt
-		}
-		if t.UserPrompt == "" && existing.UserPrompt != "" {
-			t.UserPrompt = existing.UserPrompt
-		}
-		if (existing.Name == "" || existing.Name == "Claude Code Turn" || strings.HasPrefix(existing.Name, "claude_code.")) && t.Name != "" && !strings.HasPrefix(t.Name, "claude_code.") {
-			existing.Name = t.Name
-		}
+	existing, _ := s.repo.GetTrace(t.ID)
+	if existing == nil && t.SessionID != "" {
+		existing = s.findCorrelatedTrace(t)
+	}
+
+	if existing != nil {
+		existing.MergeFrom(t)
 		t = existing
 	}
 
@@ -88,6 +72,42 @@ func (s *TraceService) IngestTrace(t *domain.Trace) error {
 			Type:  EventTraceCreated,
 			Trace: t,
 		})
+	}
+	return nil
+}
+
+func (s *TraceService) findCorrelatedTrace(t *domain.Trace) *domain.Trace {
+	traces, _, err := s.repo.ListTraces(domain.TraceFilter{SessionID: t.SessionID, Limit: 50})
+	if err != nil || len(traces) == 0 {
+		return nil
+	}
+	spanIDSet := make(map[string]bool, len(t.Spans))
+	for _, sp := range t.Spans {
+		if sp.ID != "" {
+			spanIDSet[sp.ID] = true
+		}
+	}
+	for _, cand := range traces {
+		if cand.ID == t.ID {
+			continue
+		}
+		for _, sp := range cand.Spans {
+			if spanIDSet[sp.ID] {
+				return cand
+			}
+		}
+		if t.UserPrompt != "" && cand.UserPrompt != "" && t.UserPrompt == cand.UserPrompt {
+			return cand
+		}
+		diff := cand.StartTime.Sub(t.StartTime)
+		if diff < 0 {
+			diff = -diff
+		}
+		if diff < 15*time.Second {
+			if t.UserPrompt == "" || cand.UserPrompt == "" || t.UserPrompt == cand.UserPrompt {
+				return cand
+			}
+		}
 	}
 	return nil
 }

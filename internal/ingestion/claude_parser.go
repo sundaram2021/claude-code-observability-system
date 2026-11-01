@@ -34,6 +34,7 @@ func ParseClaudeEvent(e *ClaudeEventPayload) *domain.Trace {
 		Project:    e.Project,
 		Name:       formatTurnName(e),
 		UserPrompt: e.Prompt,
+		UserOutput: e.Response,
 		Status:     status,
 		StartTime: now.Add(-time.Duration(e.Duration * float64(time.Millisecond))),
 		EndTime:   now,

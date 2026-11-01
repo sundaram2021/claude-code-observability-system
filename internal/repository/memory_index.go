@@ -23,9 +23,9 @@ func (s *MemoryStore) ListTraces(filter domain.TraceFilter) ([]*domain.Trace, in
 		return []*domain.Trace{}, total, nil
 	}
 
-	end := start + filter.Limit
-	if end > total {
-		end = total
+	end := total
+	if filter.Limit > 0 && start+filter.Limit < total {
+		end = start + filter.Limit
 	}
 
 	return filtered[start:end], total, nil

@@ -119,17 +119,20 @@ func TestFilePersistence_LoadEnrichesPrompts(t *testing.T) {
 
 	store2 := NewMemoryStore(10, 10)
 	loaded, err := LoadFromFile(store2, filePath)
-	if err != nil || loaded != 2 {
+	if err != nil || loaded != 1 {
 		t.Fatalf("LoadFromFile failed: %v, loaded=%d", err, loaded)
 	}
 
-	l1, _ := store2.GetTrace("trc_p1")
-	l2, _ := store2.GetTrace("trc_p2")
-	if l1.UserPrompt != "explain codebase" || l1.Name != "explain codebase" {
-		t.Errorf("expected l1 prompt 'explain codebase', got %s, name %s", l1.UserPrompt, l1.Name)
+	list, _, _ := store2.ListTraces(domain.TraceFilter{})
+	if len(list) != 1 {
+		t.Fatalf("expected 1 merged trace in list, got %d", len(list))
 	}
-	if l2.UserPrompt != "explain codebase" || l2.Name != "explain codebase" {
-		t.Errorf("expected l2 prompt 'explain codebase', got %s, name %s", l2.UserPrompt, l2.Name)
+	l1 := list[0]
+	if l1.UserPrompt != "explain codebase" || l1.Name != "explain codebase" {
+		t.Errorf("expected merged trace with prompt 'explain codebase', got %+v", l1)
+	}
+	if len(l1.Spans) != 2 {
+		t.Errorf("expected 2 merged spans in l1, got %d", len(l1.Spans))
 	}
 }
 
