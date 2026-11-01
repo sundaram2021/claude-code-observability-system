@@ -1,0 +1,28 @@
+.claude-plugin/plugin.json
+  h_f3a73e4b097486 4
+cmd/server/main.go
+  h_f3a73e4b097486 70-74,104
+hooks/lifecycle.js
+  h_f3a73e4b097486 104
+internal/cli/daemon_test.go
+  h_f3a73e4b097486 12,108-116,153-171
+internal/domain/trace_ops.go
+  h_f3a73e4b097486 172
+internal/handler/sse_handler.go
+  h_f3a73e4b097486 31,33,43
+web/static/js/api.js
+  h_f3a73e4b097486 57,60-62,65-69,71,75,77-80,82-87,92-93
+web/static/js/app.js
+  h_f3a73e4b097486 39-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "24c2869e5b862432b825c57647b12fc2dbf01e73",
+  "prompts": {},
+  "humans": {
+    "h_f3a73e4b097486": {
+      "author": "Sundaram Kumar Jha <jhasundarm@gmail.com>"
+    }
+  }
+}
